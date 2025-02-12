@@ -1,0 +1,36 @@
+steps:
+  - name: 'node:20'
+    id: 'Build Frontend'
+    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        npm ci
+        npm run build
+        rm -rf node_modules
+        ls -R dist
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy Frontend'
+    dir: 'frontend'
+    args: ['app', 'deploy', 'app.yaml', '--quiet']
+
+  - name: 'python:3.11'
+    id: 'Build Backend'
+    dir: 'backend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir -r requirements.txt
+        ls -R
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy Backend'
+    args: ['app', 'deploy', 'backend/app.yaml', '--quiet']
+
+timeout: 900s
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: "E2_HIGHCPU_8"

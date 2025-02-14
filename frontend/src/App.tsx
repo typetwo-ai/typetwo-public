@@ -15,7 +15,7 @@ function App() {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await fetch('https://backend-api-dot-augmented-medchem.uc.r.appspot.com/api/query', { // Local: http://127.0.0.1:5000/api/query, Cloud: https://backend-api-dot-augmented-medchem.uc.r.appspot.com/api/query
+      const response = await fetch('https://backend-api.project-1-450712.uc.r.appspot.com', { // Local: http://127.0.0.1:5000/api/query, Cloud: https://backend-api.project-1-450712.uc.r.appspot.com
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })

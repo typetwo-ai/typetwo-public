@@ -29,6 +29,10 @@ steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Backend'
     args: ['app', 'deploy', 'backend/app.yaml', '--quiet']
+  
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy Dispatch'
+    args: ['app', 'deploy', 'dispatch.yaml', '--quiet']
 
 timeout: 900s
 options:

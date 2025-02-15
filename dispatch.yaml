@@ -1,0 +1,6 @@
+dispatch:
+  - url: "beta.domain.ai/api/*"
+    service: backend-api
+
+  - url: "beta.domain.ai/*"
+    service: default

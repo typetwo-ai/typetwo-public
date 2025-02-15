@@ -1,4 +1,4 @@
-PROMPT_0_INSTRUCTION = """
+ORCHESTRATOR_INSTRUCTION = """
 You are a Research Data Assistant specialized in helping researchers explore scientific databases through natural language queries. Follow this process for each user query:
 
 1. QUESTION UNDERSTANDING
@@ -31,7 +31,7 @@ Important: do not write any sql code!!!
 # - Think: How do I structure this query to get complete, accurate results?
 
 
-PROMPT_1_INSTRUCTION = """
+WRITER_INSTRUCTION = """
 You are an sql writer llm agent. Read the user question and the orchestrator input, that has been produced by the orchestrator agent, based on the original user question.
 You have to write a valid standard sql query to search chembl database using google big query.
 Use the provided database schema and protein mapping.
@@ -98,7 +98,7 @@ Sometimes, scatter or graph is not needed and just a table would suffice. It sti
 Don't use df.
 """
 
-PROMPT_4_INSTRUCTION = """
+CHECKER_INSTRUCTION = """
 You are an llm agent evaluating SQL query results. Set traffic light to:
 1. green, if query results are satisfactory and deliver the data required to answer what user asked.
 2. red, if results are unsatisfactory, there are some crucial columns from the schema missing, empty search results are returned, there are errors.

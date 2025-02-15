@@ -1,18 +1,9 @@
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-import google.generativeai as genai
-from db_service import execute_query
-from task_description import PROMPT_1_INSTRUCTION, PROMPT_2_INSTRUCTION, PROMPT_3_INSTRUCTION
-from database_schema import DATABASE_SCHEMA, PROTEIN_MAPPING, GUIDE
-from utils import extract_sql_query, convert_numpy_arrays
-from db_agent import create_db_tool, db_search, generate_sql_with_writer, generate_instructions_with_orchestrator, evaluate_query_with_checker, db_agent_loop
-import plotly.express as px
-import plotly.graph_objects as go
-import pandas as pd
-from exec_debug import generate_figure
-from vertexai.preview.generative_models import GenerativeModel, Content, Part, Tool, FunctionDeclaration, ToolConfig
 import google.auth
 import logging
+
+from db_agent import generate_instructions_with_orchestrator, db_agent_loop
 
 app = Flask(__name__)
 CORS(app, origins="*")
@@ -46,13 +37,8 @@ def process_query() -> dict[str, list[tuple] | str]:
         logging.info(sql_query)
         logging.info(query_result)
         
-
-        figure = go.Figure(data=[go.Scatter(x=[1, 2, 3], y=[3, 1, 2])])
-        processed_figure = convert_numpy_arrays(figure.to_dict())
-        figure = None
-        
         return jsonify({
-            'figure': processed_figure if figure else None,
+            'figure': None,
             'search_results': query_result if query_result else []
         })
 

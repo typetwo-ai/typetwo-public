@@ -1,6 +1,6 @@
 dispatch:
-  - url: "beta.domain.ai/api/*"
+  - url: "beta.typetwo.ai/api/*"
     service: backend-api
 
-  - url: "beta.domain.ai/*"
+  - url: "beta.typetwo.ai/*"
     service: default

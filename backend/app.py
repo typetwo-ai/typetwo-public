@@ -3,7 +3,8 @@ from flask_cors import CORS
 import google.auth
 import logging
 
-from db_agent import generate_instructions_with_orchestrator, db_agent_loop
+from db_agent import db_agent_loop
+from orch_agent import generate_instructions_with_orchestrator
 
 app = Flask(__name__)
 CORS(app, origins="*")

@@ -157,11 +157,9 @@ def db_agent_loop(user_question, writer_input, sql_query, query_result, depth, m
 
     query_result = execute_query(sql_query)
     print(query_result)
-    time.sleep(10)
 
     checker_response, traffic_light = evaluate_query_with_checker(user_question, writer_input, query_result)
     print(f"Traffic light: {traffic_light}")
-    time.sleep(10)
     
     if traffic_light == "green":
         return sql_query, query_result

@@ -1,6 +1,6 @@
 from vertexai.preview.generative_models import GenerativeModel, Content, Tool, FunctionDeclaration, ToolConfig, Part
-from task_description import WRITER_INSTRUCTION, CHECKER_INSTRUCTION
-from database_schema import DATABASE_SCHEMA, GUIDE
+from task_description import WRITER_INSTRUCTION, CHECKER_INSTRUCTION, EXAMPLES
+from database_schema import DATABASE_SCHEMA
 from utils import execute_query
 
 
@@ -28,7 +28,7 @@ def db_agent_loop(user_question, writer_input, sql_query, query_result, depth, m
 
 
 def generate_sql_with_writer(user_question: str, writer_input: str, previous_query: str, previous_query_result: list[dict] | str) -> str:
-    prompt: str = f"{WRITER_INSTRUCTION}\n\n{DATABASE_SCHEMA}\n\nUser question:\n{user_question}\n\nOrchestrator input:\n{writer_input}\n\nPrevious sql query:\n{previous_query}\n\nPrevious query result:{previous_query_result}"
+    prompt: str = f"{WRITER_INSTRUCTION}\n\n{DATABASE_SCHEMA}\n\nUser question:\n{user_question}\n\nOrchestrator input:\n{writer_input}\n\nExamples:\n{EXAMPLES}\n\nPrevious sql query:\n{previous_query}\n\nPrevious query result:{previous_query_result}"
     model = GenerativeModel(model_name="gemini-2.0-flash-001")
     exececute_query_tool = create_execute_query_tool()
     response = model.generate_content(
@@ -80,7 +80,7 @@ def create_execute_query_tool():
     return execute_query_tool
 
 def evaluate_query_with_checker(user_question, writer_input, checker_input):
-    prompt: str = f"{CHECKER_INSTRUCTION}\n\n{DATABASE_SCHEMA}\n\n{GUIDE}\n\nQuery Result:\n{checker_input}\n\nOriginal user question:\n{user_question}\n\nWriter input:\n{writer_input}"
+    prompt: str = f"{CHECKER_INSTRUCTION}\n\n{DATABASE_SCHEMA}\n\nQuery Result:\n{checker_input}\n\nOriginal user question:\n{user_question}\n\nWriter input:\n{writer_input}"
     model = GenerativeModel(model_name="gemini-2.0-flash-001")
     traffic_light_tool = create_traffic_light_tool()
     response = model.generate_content(

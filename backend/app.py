@@ -13,6 +13,8 @@ CORS(app, origins="*")
 def health():
     return "OK", 200
 
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\pkrav\AppData\Roaming\gcloud\application_default_credentials.json"
 credentials, project = google.auth.default()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info(f"Project ID: {project}")

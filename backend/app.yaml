@@ -1,5 +1,5 @@
 runtime: python311
-entrypoint: gunicorn -b :$PORT --timeout 60 app:app
+entrypoint: gunicorn -b :$PORT --timeout 120 app:app
 service: backend-api
 
 # handlers:
@@ -9,3 +9,5 @@ service: backend-api
 
 automatic_scaling:
   min_instances: 1
+
+instance_class: F2

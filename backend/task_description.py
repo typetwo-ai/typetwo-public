@@ -76,24 +76,42 @@ AND a.pchembl_value IS NOT NULL
 LIMIT 100
 
 ---Question 2-----
-Can you pull a list of compounds tested as CFTR modulators, including whether they are potentiators or correctors, their potency, and any clinical trial data?
-SELECT 
-   td.pref_name as target_name,
-   td.organism as target_organism,
-   a.assay_id,
-   a.assay_type,
-   a.description as assay_description,
-   a.assay_organism,
-   a.assay_cell_type,
-   act.standard_type,
-   act.standard_value,
-   act.standard_units,
-   act.standard_relation,
-   act.activity_comment,
-   act.pchembl_value
+Can you pull a list of compounds tested as CFTR modulators and their potency?
+SELECT DISTINCT
+  td.pref_name as target_name,
+  td.organism as target_organism,
+  md.pref_name as compound_name,
+  md.chembl_id as compound_id,
+  a.description as assay_description,
+  act.standard_type,
+  act.standard_value,
+  act.standard_units,
+  act.standard_relation,
+  act.activity_comment
 FROM target_dictionary td
 JOIN assays a ON td.tid = a.tid
 JOIN activities act ON a.assay_id = act.assay_id
-WHERE td.pref_name LIKE '%CFTR%'
-   OR td.pref_name LIKE '%Cystic fibrosis transmembrane conductance regulator%'
+JOIN molecule_dictionary md ON act.molregno = md.molregno
+WHERE (td.pref_name LIKE '%CFTR%'
+  OR td.pref_name LIKE '%Cystic fibrosis transmembrane conductance regulator%')
+  AND act.activity_comment IS NOT NULL
+
+---Question 3-----
+List all drugs for CLN 2.
+SELECT DISTINCT
+  md.pref_name as drug_name,
+  md.chembl_id,
+  di.mesh_heading as disease_term,
+  di.efo_term as disease_ontology_term,
+  di.max_phase_for_ind as max_clinical_phase_for_cln2,
+  md.max_phase as max_clinical_phase_overall
+FROM molecule_dictionary md
+JOIN drug_indication di ON md.molregno = di.molregno
+WHERE di.mesh_heading LIKE '%Ceroid Lipofuscinosis, Neuronal%' 
+  OR di.mesh_heading LIKE '%CLN2%'
+  OR di.mesh_heading LIKE '%TPP1%'
+  OR di.efo_term LIKE '%Ceroid Lipofuscinosis%'
+  OR di.efo_term LIKE '%CLN2%'
+  OR di.efo_term LIKE '%TPP1%'
+   
 """

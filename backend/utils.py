@@ -18,7 +18,7 @@ import mysql.connector
 def execute_query(query: str) -> str | list[dict]:
    try:
        conn = mysql.connector.connect(
-           unix_socket='/cloudsql/project-1-450712:us-central1:chembl35-instance', # 3host='35.184.138.61'
+           unix_socket='/cloudsql/project-1-450712:us-central1:chembl35-instance', # host='35.184.138.61' for local, unix_socket='/cloudsql/project-1-450712:us-central1:chembl35-instance' for cloud
            user='root',
            password='chembl',
            database='chembl_35'

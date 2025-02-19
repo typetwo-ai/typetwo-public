@@ -114,4 +114,35 @@ WHERE di.mesh_heading LIKE '%Ceroid Lipofuscinosis, Neuronal%'
   OR di.efo_term LIKE '%CLN2%'
   OR di.efo_term LIKE '%TPP1%'
    
+---Question 4-----
+Get all activities for in vitro hepatic clearence assays.
+SELECT DISTINCT 
+    a.assay_id, 
+    a.description AS assay_description, 
+    a.assay_test_type, 
+    a.assay_tissue, 
+    a.assay_cell_type, 
+    a.assay_subcellular_fraction, 
+    a.assay_organism, 
+    act.activity_id, 
+    act.standard_type, 
+    act.standard_value, 
+    act.standard_units, 
+    act.activity_comment
+FROM assays a
+JOIN activities act ON a.assay_id = act.assay_id
+WHERE LOWER(a.assay_test_type) = 'in vitro' 
+AND (
+    LOWER(a.description) LIKE '%hepatic clearance%' 
+    OR LOWER(a.description) LIKE '%intrinsic clearance%'
+    OR LOWER(a.description) LIKE '%metabolic clearance%'
+    OR LOWER(a.description) LIKE '%metabolic stability%'
+    OR LOWER(a.description) LIKE '%liver microsome%'
+    OR LOWER(a.description) LIKE '%hepatocyte%'
+    OR LOWER(a.assay_tissue) LIKE '%liver%'
+    OR LOWER(a.assay_cell_type) LIKE '%hepatocyte%'
+    OR LOWER(a.assay_subcellular_fraction) LIKE '%microsome%'
+)
+ORDER BY a.assay_organism, a.assay_id, act.activity_id;
+
 """

@@ -1,0 +1,15 @@
+Retrieve all compounds in ChEMBL that inhibit bacterial topoisomerases with MIC values < 1 µM and also provide their ADMET (Absorption, Distribution, Metabolism, Excretion, and Toxicity) profiles.
+
+Get all drugs tested against Beta-Secretase 1 (BACE1), including their potency (IC50 or Ki) and clinical trial status.
+
+Can you pull a list of compounds tested as CFTR modulators, including whether they are potentiators or correctors, their potency, and any clinical trial data?
+
+Can you find allosteric modulators of the Dopamine D2 receptor, whether they are positive or negative?
+
+Are there any drugs that can slow down aging?
+
+Which painkillers are the strongest, and which are the safest?
+
+List all drugs for CLN 2.
+
+I'm interested in finding in vivo in vitro correlation for kinases in general.

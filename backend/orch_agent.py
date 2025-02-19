@@ -1,8 +1,20 @@
 from vertexai.preview.generative_models import GenerativeModel, Content, Part
 from task_description import ORCHESTRATOR_INSTRUCTION
 from database_schema import DATABASE_SCHEMA
+from typing import Any
 
-def generate_instructions_with_orchestrator(user_question):
+def generate_instructions_with_orchestrator(user_question: str) -> tuple[Any, str]:
+    """Generates text instructions for other agents using the Orchestrator agent.
+
+    Args:
+        user_question (str): The question provided by the user.
+    
+    Returns:
+        tuple[GenerateContentResponse, str]: The full response object and the extracted text response.
+    
+    References:
+        https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#non-stream-multi-modality
+    """
     prompt: str = f"User question:\n{user_question}\n\n{ORCHESTRATOR_INSTRUCTION}\n\n{DATABASE_SCHEMA}"
     model = GenerativeModel(model_name="gemini-2.0-flash-001")
     response = model.generate_content(
@@ -10,5 +22,5 @@ def generate_instructions_with_orchestrator(user_question):
             Content(role="user", parts=[Part.from_text(prompt)])
         ]
     )
-    text_response = response.candidates[0].content.parts[0].text
+    text_response: str = response.candidates[0].content.parts[0].text
     return response, text_response

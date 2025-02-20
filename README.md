@@ -1,57 +1,54 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
+<p align="center">
+  <img src="011-logo-svg.svg" alt="TypeTwo AI Logo" width="200">
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# typetwo ai
 
-Currently, two official plugins are available:
+AI agent for drug discovery. Retrieve, verify, and analyze drug and medical data from specialized databases.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Beta Preview
 
-## Expanding the ESLint configuration
+The AI agent is currently in beta. You can test the live version here:
+[beta.typetwo.ai](https://beta.typetwo.ai/).
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Overview  
 
-- Configure the top-level `parserOptions` property like this:
+This system enables natural language search over relational drug and medical databases, currently supporting *ChEMBL 35*. Users can input queries in plain English, and the AI:  
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- Interprets the request and generates a valid SQL query.  
+- Executes the query on the database.  
+- Analyzes the retrieved results to check for relevance and completeness.  
+- If results are unsatisfactory, it refines the query and repeats the process until an accurate response is obtained.  
+
+## Tech Stack
+
+- **Frontend:** React + TypeScript + Vite  
+- **Backend:** Python + Flask  
+- **LLMs:** Gemini 2.0, Claude 3.5 with tools/function calling
+- **Database:** Google Cloud SQL (currently hosting ChEMBL 35)  
+- **Deployment:** Google Cloud (App Engine, Cloud Build)
+
+
+## Project Links  
+
+- **Project Website:** [https://typetwo.ai/](https://typetwo.ai/)  
+- **Beta Deployment:** [https://beta.typetwo.ai/](https://beta.typetwo.ai/)
+
+```mermaid
+graph LR
+    %% Frontend
+    User[User / UI] -->|Asks Question| Orchestrator[Orchestrator Agent]
+    Orchestrator -->|Gives Instructions| Writer[Writer Agent]
+
+    %% Backend - Query Execution Loop
+    subgraph QueryLoop["Query Execution Loop"]
+        direction TB  %% Forces vertical stacking inside this subgraph
+        Writer -->|Executes SQL Query| Database[(Database)]
+        Checker[Checker Agent] <-->|Checks Results| Database
+        Checker -- Needs Refinement --> Writer
+    end
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
-=======
-# augmented-medchem
->>>>>>> 9aaacb66bda78f1c2507ca395aab30d14b380be9
 
 ```mermaid
 sequenceDiagram

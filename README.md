@@ -2,9 +2,9 @@
   <img src="011-logo-svg.svg" alt="TypeTwo AI Logo" width="200">
 </p>
 
-# typetwo ai
+# typetwo ai: Autonomous Agent for Drug Discovery
 
-AI agent for drug discovery. Retrieve, verify, and analyze drug and medical data from specialized databases.
+Retrieve, verify, and analyze drug and medical data from specialized databases.
 
 ## Beta Preview
 
@@ -18,7 +18,24 @@ This system enables natural language search over relational drug and medical dat
 - Interprets the request and generates a valid SQL query.  
 - Executes the query on the database.  
 - Analyzes the retrieved results to check for relevance and completeness.  
-- If results are unsatisfactory, it refines the query and repeats the process until an accurate response is obtained.  
+- If results are unsatisfactory, it refines the query and repeats the process until an accurate response is obtained.
+
+```mermaid
+graph TB
+    User[User/UI] -->|Asks question| Orchestrator[🧠 Orchestrator Agent]
+    
+    subgraph Agent Loop
+        Writer["📝 Writer Agent"]
+        Checker[🕵️ Checker Agent]
+        Database[(Database)]
+    end
+    
+    Orchestrator -->|Gives instructions| Writer
+    Writer -->|Executes SQL query| Database
+    Database -->|Returns results| Checker
+    Checker -->|Results bad| Writer
+    Checker -->|Results good| User
+```
 
 ## Tech Stack
 
@@ -34,24 +51,10 @@ This system enables natural language search over relational drug and medical dat
 - **Project Website:** [https://typetwo.ai/](https://typetwo.ai/)  
 - **Beta Deployment:** [https://beta.typetwo.ai/](https://beta.typetwo.ai/)
 
-```mermaid
-graph LR
-    %% Frontend
-    User[User / UI] -->|Asks Question| Orchestrator[Orchestrator Agent]
-    Orchestrator -->|Gives Instructions| Writer[Writer Agent]
-
-    %% Backend - Query Execution Loop
-    subgraph QueryLoop["Query Execution Loop"]
-        direction TB  %% Forces vertical stacking inside this subgraph
-        Writer -->|Executes SQL Query| Database[(Database)]
-        Checker[Checker Agent] <-->|Checks Results| Database
-        Checker -- Needs Refinement --> Writer
-    end
-```
-
-
-```mermaid
-sequenceDiagram
+<details>
+  <summary>Agent Schema</summary>
+  ```mermaid
+  sequenceDiagram
     participant App
     participant Orchestrator
     participant Writer as Query Writer
@@ -73,4 +76,4 @@ sequenceDiagram
     else Results Good
         App-)App: Return Results
     end
-```
+  ```

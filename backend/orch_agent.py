@@ -16,7 +16,7 @@ def generate_instructions_with_orchestrator(user_question: str) -> tuple[Any, st
         https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#non-stream-multi-modality
     """
     prompt: str = f"User question:\n{user_question}\n\n{ORCHESTRATOR_INSTRUCTION}\n\n{DATABASE_SCHEMA}"
-    model = GenerativeModel(model_name="gemini-2.0-flash-001")
+    model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
     response = model.generate_content(
         contents=[
             Content(role="user", parts=[Part.from_text(prompt)])

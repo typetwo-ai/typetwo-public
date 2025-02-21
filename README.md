@@ -52,6 +52,24 @@ graph TB
 - **Beta Deployment:** [https://beta.typetwo.ai/](https://beta.typetwo.ai/)
 
 <details>
+  <summary>Instructions for local</summary>
+  1. Set credentials
+  2. Set .env in /frontend folder with VITE_NODE_ENV=local
+  3. Allow your IP to access Cloud SQL
+    - Use https://whatismyipaddress.com/ and copy your IPv4
+    - Go to Console > Cloud SQL > Connections > Networking
+    - Add a network: paste the IP address in the network field, add name (optional)
+    - Save
+  4. Run frontend local dev server:
+    - npm ci (if need to install packages)
+    - npm run dev
+  5. Run backend local dev server:
+    - set a conda environment
+    - pip install -r backend/requirements.txt (if need to install packages)
+    - python backend/app.py
+
+
+<details>
   <summary>Agent Schema</summary>
   ```mermaid
   sequenceDiagram

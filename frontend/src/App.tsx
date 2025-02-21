@@ -11,11 +11,15 @@ function App() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false)
 
+  const API_URL = import.meta.env.VITE_NODE_ENV === 'local'
+  ? 'http://127.0.0.1:5000/api/query'
+  : 'https://beta.typetwo.ai/api/query';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await fetch('https://beta.typetwo.ai/api/query', { // Local: http://127.0.0.1:5000/api/query, Cloud: https://beta.typetwo.ai/api/query
+      const response = await fetch(API_URL, { // Local: http://127.0.0.1:5000/api/query, Cloud: https://beta.typetwo.ai/api/query
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })

@@ -51,22 +51,49 @@ graph TB
 - **Project Website:** [https://typetwo.ai/](https://typetwo.ai/)  
 - **Beta Deployment:** [https://beta.typetwo.ai/](https://beta.typetwo.ai/)
 
-<details>
-  <summary>Instructions for local</summary>
-  1. Set credentials
-  2. Set .env in /frontend folder with VITE_NODE_ENV=local
-  3. Allow your IP to access Cloud SQL
-    - Use https://whatismyipaddress.com/ and copy your IPv4
-    - Go to Console > Cloud SQL > Connections > Networking
-    - Add a network: paste the IP address in the network field, add name (optional)
-    - Save
-  4. Run frontend local dev server:
-    - npm ci (if need to install packages)
-    - npm run dev
-  5. Run backend local dev server:
-    - set a conda environment
-    - pip install -r backend/requirements.txt (if need to install packages)
-    - python backend/app.py
+## Instructions for Local Development
+
+1. **Set Credentials**
+   - Set up Application Default Credentials to access project's Google Cloud resources.
+   - Reference: https://cloud.google.com/docs/authentication/provide-credentials-adc
+
+2. **Configure Environment Variables**
+   - In the `/frontend` folder, create the `.env` file with:
+     ```
+     VITE_NODE_ENV=local
+     ```
+
+3. **Allow Your IP to Access Cloud SQL**
+   - Find your public IPv4 address using [WhatIsMyIPAddress](https://whatismyipaddress.com/).
+   - Navigate to **Google Cloud Console** > **Cloud SQL** > **Connections** > **Networking**.
+   - Add a new network:
+     - Paste your IPv4 address into the **Network** field.
+     - (Optional) Assign a name to the network.
+   - Click **Save**.
+
+4. **Run Frontend Locally**
+   - Navigate to the `/frontend` directory.
+   - Install dependencies (if not already installed):
+     ```
+     npm ci
+     ```
+   - Start the development server:
+     ```
+     npm run dev
+     ```
+
+5. **Run Backend Locally**
+   - Set up a Conda environment (if using Conda).
+   - Navigate to the `/backend` directory.
+   - Install dependencies (if not already installed):
+     ```
+     pip install -r requirements.txt
+     ```
+   - Start the backend server:
+     ```
+     python app.py
+     ```
+
 
 
 <details>

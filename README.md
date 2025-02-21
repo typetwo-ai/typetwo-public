@@ -89,6 +89,10 @@ graph TB
      ```
      pip install -r requirements.txt
      ```
+   - Enable local development mode (valid only for the current terminal session):
+     ```
+     set LOCAL_DEV=1
+     ```
    - Start the backend server:
      ```
      python app.py

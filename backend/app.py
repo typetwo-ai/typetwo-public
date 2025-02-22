@@ -5,6 +5,7 @@ import logging
 
 from db_agent import db_agent_loop
 from orch_agent import generate_instructions_with_orchestrator
+from reporter_agent import generate_summary_with_reporter
 
 app = Flask(__name__)
 CORS(app, origins="*")
@@ -35,8 +36,11 @@ def process_query() -> dict[str, list[tuple] | str]:
         logging.info(writer_input)
 
         sql_query, query_result = db_agent_loop(user_question, writer_input, sql_query="", query_result="", depth=0, max_depth=5)
-        
+
+        reporter_response, answer_summary = generate_summary_with_reporter(user_question, writer_input, sql_query, query_result)
+        logging.info(answer_summary)
         return jsonify({
+            'text': answer_summary,
             'figure': None,
             'search_results': query_result if query_result else []
         })

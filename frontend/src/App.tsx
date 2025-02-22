@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import './App.css';
 import { Layout, Data } from 'plotly.js';
+import Summary from './Summary';
 import Figure from './Figure';
 import Table from './Table';
 
 function App() {
   const [query, setQuery] = useState('')
+  const [summary, setSummary] = useState<string>('');
   const [figure, setFigure] = useState<{ data: Data[]; layout: Partial<Layout> } | null>(null);
   const [tableData, setTableData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false)
@@ -26,6 +28,7 @@ function App() {
       })
       const data = await response.json()
       console.log('API Response:', data);
+      setSummary(data.text);
       setFigure(data.figure)
       setTableData(data.search_results)
     } catch (error) {
@@ -60,6 +63,7 @@ function App() {
         </button>
       </form>
       <div className="flex flex-col items-center gap-4">
+        <Summary text={summary} />
         <Figure figure={figure} />
         <Table data={tableData} />
       </div>

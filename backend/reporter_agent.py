@@ -1,4 +1,4 @@
-from vertexai.preview.generative_models import GenerativeModel, Content, Part
+from vertexai.preview.generative_models import GenerativeModel, Content, Part, GenerationConfig
 from task_description import REPORTER_INSTRUCTION
 from typing import Any
 
@@ -8,7 +8,8 @@ def generate_summary_with_reporter(user_question: str, orchestrator_response: st
     response = model.generate_content(
         contents=[
             Content(role="user", parts=[Part.from_text(prompt)])
-        ]
+        ],
+        generation_config=GenerationConfig(temperature=0)
     )
     text_response: str = response.candidates[0].content.parts[0].text
 

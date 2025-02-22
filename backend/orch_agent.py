@@ -1,4 +1,4 @@
-from vertexai.preview.generative_models import GenerativeModel, Content, Part
+from vertexai.preview.generative_models import GenerativeModel, Content, Part, GenerationConfig
 from task_description import ORCHESTRATOR_INSTRUCTION
 from database_schema import DATABASE_SCHEMA
 from typing import Any
@@ -20,7 +20,8 @@ def generate_instructions_with_orchestrator(user_question: str) -> tuple[Any, st
     response = model.generate_content(
         contents=[
             Content(role="user", parts=[Part.from_text(prompt)])
-        ]
+        ],
+        generation_config=GenerationConfig(temperature=0)
     )
     text_response: str = response.candidates[0].content.parts[0].text
     return response, text_response

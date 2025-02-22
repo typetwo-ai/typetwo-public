@@ -1,4 +1,4 @@
-from vertexai.preview.generative_models import GenerativeModel, Content, Tool, FunctionDeclaration, ToolConfig, Part
+from vertexai.preview.generative_models import GenerativeModel, Content, Tool, FunctionDeclaration, ToolConfig, Part, GenerationConfig
 from task_description import WRITER_INSTRUCTION, CHECKER_INSTRUCTION, EXAMPLES
 from database_schema import DATABASE_SCHEMA, TABLES
 from utils import execute_query
@@ -69,7 +69,8 @@ def generate_sql_with_writer(user_question: str, writer_input: str, previous_que
             tools=[exececute_query_tool],
             tool_config=ToolConfig(
                 function_calling_config=ToolConfig.FunctionCallingConfig(mode=ToolConfig.FunctionCallingConfig.Mode.ANY)
-            )
+            ),
+            generation_config=GenerationConfig(temperature=0)
         )
     function_call = response.candidates[0].function_calls[0]
     sql_query: str = function_call.args["query"]
@@ -139,7 +140,8 @@ def evaluate_query_with_checker(user_question: str, writer_input: str, checker_i
             tools=[traffic_light_tool],
             tool_config=ToolConfig(
                 function_calling_config=ToolConfig.FunctionCallingConfig(mode=ToolConfig.FunctionCallingConfig.Mode.ANY)
-            )
+            ),
+            generation_config=GenerationConfig(temperature=0)
         )
     function_call = response.candidates[0].function_calls[0]
     color: str = function_call.args["color"]

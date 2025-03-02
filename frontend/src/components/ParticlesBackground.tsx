@@ -3,6 +3,7 @@ import React, { useCallback, memo } from 'react';
 import Particles from 'react-tsparticles';
 import { loadSlim } from "tsparticles-slim";
 
+// Standalone background component that doesn't receive any props
 const ParticlesBackground = memo(() => {
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine);
@@ -12,6 +13,7 @@ const ParticlesBackground = memo(() => {
     console.log("Particles loaded", container);
   }, []);
   
+  // Defined outside of the component to prevent recreation
   const particlesConfig = {
     particles: {
       number: {

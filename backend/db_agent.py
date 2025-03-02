@@ -29,7 +29,7 @@ def db_agent_loop(user_question: str, writer_input: str, sql_query: str, query_r
     writer_response, sql_query = generate_sql_with_writer(user_question, writer_input, sql_query, query_result)
     print(sql_query)
 
-    query_result = execute_query(sql_query)
+    query_result = execute_query(sql_query, limit=100)
     print(query_result)
 
     checker_response, traffic_light = evaluate_query_with_checker(user_question, writer_input, query_result)

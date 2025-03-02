@@ -38,7 +38,7 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="flex-grow py-3 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-gray-700"
-              placeholder="Ask a question about your data..."
+              placeholder="Search with AI in ChEMBL35..."
             />
             <button 
               type="submit" 
@@ -52,7 +52,7 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
                   Processing
                 </div>
               ) : (
-                <span>Analyze</span>
+                <span>Search</span>
               )}
             </button>
           </div>

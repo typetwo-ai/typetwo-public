@@ -1,4 +1,3 @@
-// components/Dynamictable.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 
 interface DynamicTableProps {
@@ -7,26 +6,17 @@ interface DynamicTableProps {
 
 const DynamicTable: React.FC<DynamicTableProps> = ({ data }) => {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [filterText, setFilterText] = useState('');
   const [visible, setVisible] = useState(false);
   const [rowsVisible, setRowsVisible] = useState<boolean[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
+  // If no data, return null
   if (!data || data.length === 0) return null;
 
+  // Get column headers dynamically from first row
   const columns = Object.keys(data[0]);
-  
-  const columnsWithLargeValues = useMemo(() => {
-    const result: Record<string, boolean> = {};
-    columns.forEach(column => {
-      result[column] = data.some(row => {
-        const value = row[column];
-        return typeof value === 'string' && value.length > 40;
-      });
-    });
-    return result;
-  }, [data, columns]);
 
+  // Sorting logic
   const sortedData = useMemo(() => {
     if (!sortConfig) return data;
     return [...data].sort((a, b) => {
@@ -40,13 +30,17 @@ const DynamicTable: React.FC<DynamicTableProps> = ({ data }) => {
     });
   }, [data, sortConfig]);
 
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return sortedData.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedData, currentPage]);
+  // Filtering logic
+  const filteredData = useMemo(() => {
+    if (!filterText) return sortedData;
+    return sortedData.filter(row => 
+      columns.some(column => 
+        String(row[column]).toLowerCase().includes(filterText.toLowerCase())
+      )
+    );
+  }, [sortedData, filterText]);
 
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-
+  // Handle sorting
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig?.key === key && sortConfig.direction === 'asc') {
@@ -55,238 +49,91 @@ const DynamicTable: React.FC<DynamicTableProps> = ({ data }) => {
     setSortConfig({ key, direction });
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    const tableElement = document.getElementById('dynamic-table');
-    if (tableElement) {
-      tableElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const renderPaginationButtons = () => {
-    const buttons = [];
-    
-    buttons.push(
-      <button
-        key="prev"
-        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className={`px-3 py-1 rounded-md ${
-          currentPage === 1
-            ? 'text-gray-400 cursor-not-allowed'
-            : 'text-blue-600 hover:bg-blue-50'
-        }`}
-        aria-label="Previous page"
-      >
-        ←
-      </button>
-    );
-    
-    const range = 2; // How many pages to show on each side of current page
-    let startPage = Math.max(1, currentPage - range);
-    let endPage = Math.min(totalPages, currentPage + range);
-    
-    if (endPage - startPage + 1 < Math.min(5, totalPages)) {
-      if (currentPage < totalPages / 2) {
-        endPage = Math.min(startPage + 4, totalPages);
-      } else {
-        startPage = Math.max(1, endPage - 4);
-      }
-    }
-    
-    if (startPage > 1) {
-      buttons.push(
-        <button
-          key="1"
-          onClick={() => handlePageChange(1)}
-          className="px-3 py-1 rounded-md text-blue-600 hover:bg-blue-50"
-        >
-          1
-        </button>
-      );
-      if (startPage > 2) {
-        buttons.push(<span key="start-ellipsis" className="px-2">...</span>);
-      }
-    }
-    
-    // Add page numbers
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <button
-          key={i}
-          onClick={() => handlePageChange(i)}
-          className={`px-3 py-1 rounded-md ${
-            currentPage === i
-              ? 'bg-blue-600 text-white'
-              : 'text-blue-600 hover:bg-blue-50'
-          }`}
-        >
-          {i}
-        </button>
-      );
-    }
-    
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        buttons.push(<span key="end-ellipsis" className="px-2">...</span>);
-      }
-      buttons.push(
-        <button
-          key={totalPages}
-          onClick={() => handlePageChange(totalPages)}
-          className="px-3 py-1 rounded-md text-blue-600 hover:bg-blue-50"
-        >
-          {totalPages}
-        </button>
-      );
-    }
-    
-    buttons.push(
-      <button
-        key="next"
-        onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className={`px-3 py-1 rounded-md ${
-          currentPage === totalPages
-            ? 'text-gray-400 cursor-not-allowed'
-            : 'text-blue-600 hover:bg-blue-50'
-        }`}
-        aria-label="Next page"
-      >
-        →
-      </button>
-    );
-    
-    return buttons;
-  };
-
+  // Animation effects
   useEffect(() => {
+    // Animate the table container
     setVisible(true);
     
-    const newRowsVisible = Array(paginatedData.length).fill(false);
-    paginatedData.forEach((_, index) => {
+    // Animate rows one by one
+    const newRowsVisible = Array(filteredData.length).fill(false);
+    filteredData.forEach((_, index) => {
       setTimeout(() => {
         setRowsVisible(prev => {
           const updated = [...prev];
           updated[index] = true;
           return updated;
         });
-      }, 50 * index);
+      }, 50 * index); // Stagger the row animations
     });
     
+    // Initialize rows visibility array
     setRowsVisible(newRowsVisible);
-  }, [paginatedData]);
+  }, [filteredData]);
 
   return (
     <div 
-      id="dynamic-table"
       className={`w-full overflow-x-auto transition-all duration-500 ease-in-out ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
     >
-      
-      <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-        <div className="overflow-x-auto max-h-[70vh]">
-          <table className="w-full bg-white divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {columns.map((column) => (
-                <th 
-                  key={column}
-                  onClick={() => handleSort(column)}
-                  className={`group px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-all ${
-                    columnsWithLargeValues[column] ? 'min-w-[200px]' : ''
-                  }`}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>{column}</span>
-                    <span className="transition-opacity">
-                      {sortConfig?.key === column ? (
-                        sortConfig.direction === 'asc' ? 
-                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                          </svg> : 
-                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                      ) : (
-                        <svg className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                        </svg>
-                      )}
-                    </span>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedData.length > 0 ? (
-              paginatedData.map((row, rowIndex) => (
-                <tr 
-                  key={rowIndex} 
-                  className={`hover:bg-gray-50 transition-all duration-300 ease-in-out ${
-                    rowsVisible[rowIndex] ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-                  }`}
-                >
-                  {columns.map((column) => (
-                    <td 
-                      key={column} 
-                      className="px-6 py-4 text-sm text-gray-700"
-                    >
-                      {row[column] !== null && row[column] !== undefined ? (
-                        <div className="relative group">
-                          <div className="max-w-xs overflow-hidden text-ellipsis">
-                            {typeof row[column] === 'string' && row[column].length > 100 ? (
-                              <div className="truncate" title={String(row[column])}>
-                                {String(row[column])}
-                              </div>
-                            ) : (
-                              <div className={typeof row[column] === 'string' && row[column].length > 40 ? "truncate" : ""} 
-                                title={typeof row[column] === 'string' && row[column].length > 40 ? String(row[column]) : ""}>
-                                {String(row[column])}
-                              </div>
-                            )}
-                          </div>
-                          {typeof row[column] === 'string' && row[column].length > 40 && (
-                            <div className="absolute z-10 invisible bg-gray-800 text-white text-xs rounded py-1 px-2 right-0 bottom-full mb-2 group-hover:visible whitespace-normal max-w-sm break-words opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              {String(row[column])}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">N/A</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td 
-                  colSpan={columns.length} 
-                  className="px-6 py-8 text-center text-gray-500"
-                >
-                  No results found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        </div>
+      <div className="mb-4 flex justify-between items-center">
+        <input
+          type="text"
+          placeholder="Filter results..."
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
       </div>
       
-      {sortedData.length > itemsPerPage && (
-        <div className="flex justify-center items-center space-x-1 mt-4 py-2">
-          {renderPaginationButtons()}
-        </div>
-      )}
+      <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead className="bg-gray-100">
+          <tr>
+            {columns.map((column) => (
+              <th 
+                key={column}
+                onClick={() => handleSort(column)}
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition"
+              >
+                {column}
+                {sortConfig?.key === column && (
+                  <span className="ml-2">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {filteredData.map((row, rowIndex) => (
+            <tr 
+              key={rowIndex} 
+              className={`hover:bg-gray-50 transition-all duration-300 ease-in-out ${
+                rowsVisible[rowIndex] ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+              }`}
+            >
+              {columns.map((column) => (
+                <td 
+                  key={column} 
+                  className="px-4 py-3 text-sm text-gray-700"
+                >
+                  {row[column] !== null && row[column] !== undefined 
+                    ? String(row[column]) 
+                    : 'N/A'}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
       
-      {sortedData.length > 0 && (
-        <div className="mt-2 text-sm text-center text-gray-600">
-          Page {currentPage} of {totalPages}
-        </div>
-      )}
+      {/* Results count */}
+      <div className={`mt-4 text-sm text-gray-600 transition-all duration-500 ease-in-out ${
+        visible ? 'opacity-100' : 'opacity-0'
+      }`}>
+        Showing {filteredData.length} of {data.length} results
+      </div>
     </div>
   );
 };

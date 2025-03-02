@@ -29,24 +29,29 @@ const Toast: React.FC<ToastProps> = ({
 
   useEffect(() => {
     if (shouldRender) {
+      // Trigger enter animation on next frame
       requestAnimationFrame(() => {
         setIsActive(isVisible);
       });
     }
     
     if (!isVisible && shouldRender) {
+      // Keep rendered but hide with animation
       setIsActive(false);
+      // Remove from DOM after animation completes
       const timeout = setTimeout(() => {
         setShouldRender(false);
-      }, 300);
+      }, 300); // Match transition duration
       return () => clearTimeout(timeout);
     }
   }, [isVisible, shouldRender]);
 
   useEffect(() => {
     if (isVisible) {
+      // Reset progress when toast becomes visible
       setProgress(100);
       
+      // Set up the progress bar
       const interval = setInterval(() => {
         setProgress((prevProgress) => {
           const newProgress = prevProgress - (100 / (duration / 100));
@@ -56,6 +61,7 @@ const Toast: React.FC<ToastProps> = ({
       
       setIntervalId(interval);
 
+      // Set up the timeout to dismiss
       const timeout = setTimeout(() => {
         onDismiss();
       }, duration);
@@ -149,6 +155,7 @@ const Toast: React.FC<ToastProps> = ({
           </button>
         </div>
         
+        {/* Progress bar */}
         <div className="w-full bg-gray-200 h-1 mt-2 overflow-hidden" style={{marginBottom: '-1rem', marginLeft: '-1rem', marginRight: '-1rem', width: 'calc(100% + 2rem)'}}>
           <div 
             className={`${progressColors[type]} h-1 transition-all duration-100 ease-linear`}

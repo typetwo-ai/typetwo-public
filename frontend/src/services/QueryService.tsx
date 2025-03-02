@@ -1,23 +1,27 @@
 // services/QueryService.tsx
 import { useState } from 'react';
 import axios from 'axios';
-import { config } from '../config/env.config'
+import { Layout, Data } from 'plotly.js';
 
 export interface QueryResponse {
   summary?: string;
+  figure?: { 
+    data: Data[];
+    layout: Partial<Layout>;
+  };
   searchResults?: any[];
-  requestId?: string;
   error?: string;
 }
 
 export const useQueryService = () => {
   const [loading, setLoading] = useState(false);
+  const API_URL = 'http://127.0.0.1:5000/api/query';
 
   const submitQuery = async (query: string): Promise<QueryResponse> => {
     setLoading(true);
     
     try {
-      const response = await axios.post(config.apiEndpoints.query, { query });
+      const response = await axios.post(API_URL, { query });
       return response.data;
     } catch (error) {
       let errorMessage = 'Unknown error occurred';

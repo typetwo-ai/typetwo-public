@@ -1,3 +1,4 @@
+// components/Dynamictable.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 
 interface DynamicTableProps {

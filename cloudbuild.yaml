@@ -12,10 +12,11 @@ steps:
     dir: 'frontend'
     entrypoint: 'bash'
     env:
-      - 'VITE_NODE_ENV=${_VITE_NODE_ENV}'
+      - 'VITE_NODE_ENV=$_VITE_NODE_ENV'
     args:
       - '-c'
       - |
+        echo "VITE_NODE_ENV is: $VITE_NODE_ENV"
         npm ci
         npm run build
         rm -rf node_modules

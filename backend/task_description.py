@@ -1,4 +1,9 @@
-ORCHESTRATOR_INSTRUCTION = """
+ORCHESTRATOR_INSTRUCTION = \
+"""
+User question:
+{user_question}
+
+
 You are a Research Data Assistant specialized in helping researchers explore scientific databases through natural language queries. Follow this process for each user query:
 
 1. QUESTION UNDERSTANDING
@@ -22,9 +27,16 @@ You are a Research Data Assistant specialized in helping researchers explore sci
 - Think: What additional context does the researcher need for accurate results?
 
 Important: do not write any sql code!!!
+
+Here is the database schema, so you can better understand the question:
+
+{database_schema}
 """
 
-WRITER_INSTRUCTION = """
+prompt: str = f"{WRITER_INSTRUCTION}\n\n{DATABASE_SCHEMA, TABLES}\n\nUser question:\n{user_question}\n\nOrchestrator input:\n{writer_input}\n\nExamples:\n{EXAMPLES}\n\nPrevious sql query:\n{previous_query}\n\nPrevious query result:{previous_query_result}"
+
+WRITER_INSTRUCTION = \
+"""
 You are an sql writer llm agent. Read the user question and the orchestrator input, that has been produced by the orchestrator agent, based on the original user question.
 You have to write a valid standard sql query to search chembl database using google big query.
 Use the provided database schema and protein mapping.
@@ -38,6 +50,39 @@ Write a simple query, don't use complicated symbols or words. Just selects and j
 You need to understand the error, and do something about it. You need to change the sql code to a good degree to avoid the error you received.
 If results are an empty list, that means that you have too constrained search and you found nothing. That means you have to make to reduce filtering requirements. So, you need to drastically change things!!!
 If someone mentions the molecule by name, try to search it via some more systmatic name, such as chemblid, smiles, molregno or some universal number that uniquly charactersises that particular compound.
+
+Database schema: 
+{database_schema}
+
+User question:
+{user_question}
+
+Orchestrator output:
+{orchestrator_output}
+
+Examples:
+{examples}
+
+
+"""
+
+CHECKER_JUDGEMENT_FOR_WRITER_WRAPPER = \
+"""
+You already did some tries for this task but you didn't pass tests of our system because of incorrect SQL query, 
+before writing new one, you need to analyze your previous tries and check system's response:
+
+"""
+
+CHECKER_JUDGEMENT_FOR_WRITER_ITERATION = \
+"""
+Try #{try_number}.
+SQL query: 
+{sql_query}
+Query result (only 1 row):
+{query_result}
+
+Checker's response:
+{checker_response}
 """
 
 CHECKER_INSTRUCTION = """

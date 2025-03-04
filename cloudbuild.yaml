@@ -7,14 +7,14 @@ steps:
       - '-c'
       - |
         npm ci
-        npm run build
+        VITE_NODE_ENV=${_VITE_NODE_ENV} npm run build
         rm -rf node_modules
         ls -R dist
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Frontend'
     dir: 'frontend'
-    args: ['app', 'deploy', 'app.yaml', '--quiet']
+    args: ['app', 'deploy', 'app.yaml', '--quiet', '--service=${_SERVICE_FRONTEND}']
 
   - name: 'python:3.11'
     id: 'Build Backend'
@@ -28,11 +28,22 @@ steps:
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Backend'
-    args: ['app', 'deploy', 'backend/app.yaml', '--quiet']
+    args: ['app', 'deploy', 'backend/app.yaml', '--quiet', '--service=${_SERVICE_BACKEND}']
   
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Dispatch'
-    args: ['app', 'deploy', 'dispatch.yaml', '--quiet']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [ "$_DEPLOY_DISPATCH" = "yes" ]; then
+          gcloud app deploy dispatch.yaml --quiet
+        elif [ "$_DEPLOY_DISPATCH" = "no" ]; then
+          echo "Skipping dispatch.yaml deployment."
+        else
+          echo "ERROR: Unexpected value for _DEPLOY_DISPATCH: '$$_DEPLOY_DISPATCH'"
+          exit 1
+        fi
 
 timeout: 900s
 options:

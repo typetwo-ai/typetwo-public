@@ -1,11 +1,5 @@
 runtime: python311
 entrypoint: gunicorn -b :$PORT --timeout 120 app:app
-service: backend-api
-
-# handlers:
-#   - url: /api/.*
-#     script: auto
-#     secure: optional
 
 automatic_scaling:
   min_instances: 1

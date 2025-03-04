@@ -15,7 +15,11 @@ function App() {
 
   const API_URL = import.meta.env.VITE_NODE_ENV === 'local'
   ? 'http://127.0.0.1:5000/api/query'
-  : 'https://beta.typetwo.ai/api/query';
+  : import.meta.env.VITE_NODE_ENV === 'dev'
+  ? 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/query'
+  : import.meta.env.VITE_NODE_ENV === 'main'
+  ? 'https://beta.typetwo.ai/api/query'
+  : '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

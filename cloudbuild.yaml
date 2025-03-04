@@ -1,4 +1,12 @@
 steps:
+  - name: 'bash'
+    id: 'Set Service Names'
+    args:
+      - '-c'
+      - |
+        sed -i '1s;^;service: ${_SERVICE_FRONTEND}\n;' frontend/app.yaml
+        sed -i '1s;^;service: ${_SERVICE_BACKEND}\n;' backend/app.yaml
+
   - name: 'node:20'
     id: 'Build Frontend'
     dir: 'frontend'

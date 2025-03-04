@@ -22,7 +22,7 @@ steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Frontend'
     dir: 'frontend'
-    args: ['app', 'deploy', 'app.yaml', '--quiet', '--service=${_SERVICE_FRONTEND}']
+    args: ['app', 'deploy', 'app.yaml', '--quiet']
 
   - name: 'python:3.11'
     id: 'Build Backend'
@@ -36,7 +36,7 @@ steps:
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Backend'
-    args: ['app', 'deploy', 'backend/app.yaml', '--quiet', '--service=${_SERVICE_BACKEND}']
+    args: ['app', 'deploy', 'backend/app.yaml', '--quiet']
   
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy Dispatch'
@@ -56,4 +56,4 @@ steps:
 timeout: 900s
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: "E2_HIGHCPU_8"
+  # machineType: "E2_HIGHCPU_8"

@@ -9,7 +9,7 @@ def generate_summary_with_reporter(user_question: str, orchestrator_response: st
         contents=[
             Content(role="user", parts=[Part.from_text(prompt)])
         ],
-        generation_config=GenerationConfig(temperature=0)
+        generation_config=GenerationConfig(temperature=0, top_k=1, top_p=1)
     )
     text_response: str = response.candidates[0].content.parts[0].text
 

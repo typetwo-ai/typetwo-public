@@ -70,7 +70,7 @@ def generate_sql_with_writer(user_question: str, writer_input: str, previous_que
             tool_config=ToolConfig(
                 function_calling_config=ToolConfig.FunctionCallingConfig(mode=ToolConfig.FunctionCallingConfig.Mode.ANY)
             ),
-            generation_config=GenerationConfig(temperature=0)
+            generation_config=GenerationConfig(temperature=0, top_k=1, top_p=1)
         )
     function_call = response.candidates[0].function_calls[0]
     sql_query: str = function_call.args["query"]
@@ -141,7 +141,7 @@ def evaluate_query_with_checker(user_question: str, writer_input: str, checker_i
             tool_config=ToolConfig(
                 function_calling_config=ToolConfig.FunctionCallingConfig(mode=ToolConfig.FunctionCallingConfig.Mode.ANY)
             ),
-            generation_config=GenerationConfig(temperature=0)
+            generation_config=GenerationConfig(temperature=0, top_k=1, top_p=1)
         )
     function_call = response.candidates[0].function_calls[0]
     color: str = function_call.args["color"]

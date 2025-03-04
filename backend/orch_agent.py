@@ -21,7 +21,7 @@ def generate_instructions_with_orchestrator(user_question: str) -> tuple[Any, st
         contents=[
             Content(role="user", parts=[Part.from_text(prompt)])
         ],
-        generation_config=GenerationConfig(temperature=0)
+        generation_config=GenerationConfig(temperature=0, top_k=1, top_p=1)
     )
     text_response: str = response.candidates[0].content.parts[0].text
     return response, text_response

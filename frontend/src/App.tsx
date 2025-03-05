@@ -13,26 +13,14 @@ function App() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false)
 
-  // const API_URL = import.meta.env.VITE_NODE_ENV === 'local'
-  // ? 'http://127.0.0.1:5000/api/query'
-  // : import.meta.env.VITE_NODE_ENV === 'dev'
-  // ? 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/query'
-  // : import.meta.env.VITE_NODE_ENV === 'main'
-  // ? 'https://beta.typetwo.ai/api/query'
-  // : '';
-
-  // console.log(API_URL);
-
-  const API_URLS = {
-    local: 'http://127.0.0.1:5000/api/query',
-    dev: 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/query',
-    main: 'https://beta.typetwo.ai/api/query',
-  } as const;
-  
-  const API_URL = API_URLS[import.meta.env.VITE_NODE_ENV as keyof typeof API_URLS] || 'bad url';
-  
-  console.log(API_URL);
-  
+  const API_URL = import.meta.env.VITE_NODE_ENV === 'local'
+  ? 'http://127.0.0.1:5000/api/query'
+  : import.meta.env.VITE_NODE_ENV === 'dev'
+  ? 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/query'
+  : import.meta.env.VITE_NODE_ENV === 'main'
+  ? 'https://beta.typetwo.ai/api/query'
+  : '';
+  console.log(API_URL);  
   
 
   const handleSubmit = async (e: React.FormEvent) => {

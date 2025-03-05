@@ -1,8 +1,10 @@
+import re
 from decimal import Decimal
 import mysql.connector
 import os
-    
-def execute_query(query: str) -> list[dict] | str:
+
+
+def execute_query(query: str, limit=100) -> list[dict] | str:
     """Executes an SQL query on the ChEMBL database and returns the results.
 
     Args:
@@ -14,7 +16,7 @@ def execute_query(query: str) -> list[dict] | str:
         A string containing an error message if an exception occurs.
     """
     try:
-        if os.getenv("LOCAL_DEV"): # Checks if running locally
+        if os.getenv("LOCAL_DEV"):  # Checks if running locally
             conn = mysql.connector.connect(
                 host='35.184.138.61',
                 user='root',
@@ -28,6 +30,9 @@ def execute_query(query: str) -> list[dict] | str:
                 password='chembl',
                 database='chembl_35'
             )
+
+        query = remove_limit_clause(query)
+        query += f" LIMIT {limit}"
         cursor = conn.cursor(dictionary=True)
         cursor.execute(query)
         results = cursor.fetchall()
@@ -36,9 +41,15 @@ def execute_query(query: str) -> list[dict] | str:
             for key, value in row.items():
                 if isinstance(value, Decimal):
                     row[key] = float(value)
-       
+
         cursor.close()
         conn.close()
         return results
     except Exception as e:
         return f"Error: {e}"
+
+
+def remove_limit_clause(sql_query):
+    pattern = r'\bLIMIT\s+\d+(?:\s*(?:,|\bOFFSET\b)\s*\d+)?\s*$'
+
+    return re.sub(pattern, '', sql_query, flags=re.IGNORECASE).strip()

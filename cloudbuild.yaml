@@ -15,7 +15,8 @@ steps:
       - '-c'
       - |
         echo "VITE_NODE_ENV is: $$VITE_NODE_ENV"
-        export VITE_NODE_ENV="${_VITE_NODE_ENV}"
+        echo "VITE_NODE_ENV=${_VITE_NODE_ENV}" > .env
+        cat .env
         npm ci
         npm run build
         rm -rf node_modules

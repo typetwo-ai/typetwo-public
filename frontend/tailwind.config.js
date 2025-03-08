@@ -20,6 +20,13 @@ export default {
           800: '#3730a3',
           900: '#312e81',
         },
+        yellow: {
+          main: '#f9eb31'
+        },
+        green: {
+          main: '#005248',
+          light: '#217459',
+        }
       },
       boxShadow: {
         lg: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',

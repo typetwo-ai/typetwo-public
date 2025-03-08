@@ -27,13 +27,13 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
             }}
             minRows={1}
             maxRows={10}
-            className="w-full py-3 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-gray-700 resize-none overflow-auto"
-            placeholder="Search with AI in ChEMBL35..."
+            className="w-full py-3 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-main focus:border-green-main transition-all outline-none text-gray-700 resize-none overflow-auto"
+            placeholder="e.g. Find all clinical drugs for Alzheimer's disease."
           />
         </div>
         <button 
           type="submit" 
-          className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-32 h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg focus:outline-none disabled:opacity-70 flex items-center justify-center transition-all duration-300 ease-in-out self-center"
+          className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-32 h-12 bg-green-main hover:bg-green-light text-white font-medium rounded-lg focus:outline-none disabled:opacity-70 flex items-center justify-center transition-all duration-300 ease-in-out self-center"
           disabled={loading}
         >
           {loading ? (

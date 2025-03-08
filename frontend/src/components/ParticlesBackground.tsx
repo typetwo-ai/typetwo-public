@@ -114,7 +114,7 @@ const ParticlesBackground = memo(() => {
     },
     retina_detect: true,
     background: {
-      color: "#f3f4f6",
+      color: "#f7f8fa",
       opacity: 1
     },
     fps_limit: 60

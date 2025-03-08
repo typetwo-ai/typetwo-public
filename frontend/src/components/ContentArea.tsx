@@ -1,6 +1,5 @@
 // components/ContentArea.tsx
 import React, { useState, useEffect } from 'react';
-import { Layout, Data } from 'plotly.js';
 import { useQueryService } from '../services/QueryService';
 import { useToast } from '../context/ToastContext';
 import SearchForm from './SearchForm';
@@ -74,57 +73,50 @@ const ContentArea: React.FC = () => {
     }
   };
 
-  // Handle query changes
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
-    
-    if (newQuery === '') {
+
+    if (!newQuery.trim()) {
+      setSummary('');
+      setSearchResults([]);
+      setHasResults(false);
       setSummaryVisible(false);
       setResultsVisible(false);
-      setTimeout(() => {
-        setSummary('');
-        setSearchResults([]);
-        setHasResults(false);
-      }, 300);
     }
   };
 
   return (
-    <div className="w-full py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-semibold text-gray-900 tracking-tight">Retrieve data from ChEMBL35</h2>
-          <p className="text-lg text-gray-700 tracking-tight">Simply type your query in raw english. No SQL knowledge required.</p>
-        </div>
-        
-        <div className="w-full max-w-2xl mx-auto mb-12">
-          <SearchForm 
-            query={query}
-            setQuery={handleQueryChange}
-            loading={loading}
-            handleSubmit={handleSubmit}
-            hasResults={hasResults}
-          />
-        </div>
-        
-        <div 
-          className="w-full transition-opacity duration-500 ease-in-out overflow-hidden"
-          style={{ 
-            opacity: hasResults ? 1 : 0,
-            visibility: hasResults ? 'visible' : 'hidden',
-            height: hasResults ? 'auto' : '0',
-            marginTop: hasResults ? '16px' : '0',
-            position: 'relative'
-          }}
-        >
-          <ResultsContent 
-            searchResults={searchResults}
-            requestId={requestId}
-            summary={summary}
-            summaryVisible={summaryVisible}
-            resultsVisible={resultsVisible}
-          />
-        </div>
+    <div className="py-8">
+      <div className="container max-w-6xl text-center mb-8">
+        <h2 className="text-4xl font-semibold tracking-normal text-gray-900 mb-5">
+          Retrieve data from ChEMBL35
+        </h2>
+        <p className="text-lg tracking-normal text-gray-500">
+          Simply type your query in raw English.
+        </p>
+      </div>
+  
+      <div className="max-w-2xl mx-auto mb-12 mt-6">
+        <SearchForm 
+          query={query}
+          setQuery={handleQueryChange}
+          loading={loading}
+          handleSubmit={handleSubmit}
+          hasResults={hasResults}
+        />
+      </div>
+  
+      <div 
+        className={`transition-opacity duration-500 ease-in-out overflow-hidden 
+        ${hasResults ? 'opacity-100 visible mt-4' : 'opacity-0 invisible h-0'}`}
+      >
+        <ResultsContent 
+          searchResults={searchResults}
+          requestId={requestId}
+          summary={summary}
+          summaryVisible={summaryVisible}
+          resultsVisible={resultsVisible}
+        />
       </div>
     </div>
   );

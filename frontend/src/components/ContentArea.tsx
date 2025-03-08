@@ -93,8 +93,8 @@ const ContentArea: React.FC = () => {
     <div className="w-full py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Retrieve data from ChEMBL35</h2>
-          <p className="text-xl text-gray-600">Simply type your query in raw english. No SQL knowledge required.</p>
+          <h2 className="text-4xl font-semibold text-gray-900 tracking-tight">Retrieve data from ChEMBL35</h2>
+          <p className="text-lg text-gray-700 tracking-tight">Simply type your query in raw english. No SQL knowledge required.</p>
         </div>
         
         <div className="w-full max-w-2xl mx-auto mb-12">

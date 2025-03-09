@@ -2,7 +2,7 @@
 import React from 'react';
 
 const Header: React.FC = () => (
-  <header className="w-full py-6 ml-10">
+  <header className="w-full py-6 pl-10">
     <img
       src="/011-logo-svg.svg"
       alt="Logo"

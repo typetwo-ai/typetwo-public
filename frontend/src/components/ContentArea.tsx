@@ -8,7 +8,7 @@ import ResultsContent from './ResultsContent';
 const ContentArea: React.FC = () => {
   const [query, setQuery] = useState('');
   const [summary, setSummary] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Record<string, unknown>[]>([]);
   const [requestId, setRequestId] = useState<string>('');
   
   const [summaryVisible, setSummaryVisible] = useState(false);

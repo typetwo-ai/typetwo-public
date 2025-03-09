@@ -5,7 +5,7 @@ import { config } from '../config/env.config'
 
 export interface QueryResponse {
   summary?: string;
-  searchResults?: any[];
+  searchResults?: Record<string, unknown>[];
   requestId?: string;
   error?: string;
 }

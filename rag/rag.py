@@ -1,29 +1,28 @@
 import os
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 
-import numpy as np
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_core.documents import Document
-from langchain_community.vectorstores import FAISS
+from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 
 
 class RAGRetrieval:
     """
     A configurable retrieval component for RAG pipelines with fine-grained control over each step.
     Uses LangChain for document loading and chunking, with granite-embedding-107m-multilingual for embeddings.
+    Modified to work with TXT files instead of PDFs.
     """
 
     def __init__(
             self,
-            pdf_directory: str,
+            txt_directory: str,
             chunk_size: int = 1000,
             chunk_overlap: int = 200,
-            # embedding_model_name: str = "ibm-granite/granite-embedding-107m-multilingual"
-            embedding_model_name: str = "Phando/chemberta-v2-finetuned-uspto-50k-classification"
+            embedding_model_name: str = "ibm-granite/granite-embedding-107m-multilingual"
     ):
-        self.pdf_directory = pdf_directory
+        self.txt_directory = txt_directory
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.embedding_model_name = embedding_model_name
@@ -34,12 +33,12 @@ class RAGRetrieval:
         self.embeddings = None
 
     def load_documents(self) -> List[Document]:
-        print(f"Loading documents from {self.pdf_directory}")
+        print(f"Loading TXT documents from {self.txt_directory}")
 
         loader = DirectoryLoader(
-            self.pdf_directory,
-            glob="**/*.pdf",
-            loader_cls=PyPDFLoader
+            self.txt_directory,
+            glob="**/*.txt",
+            loader_cls=TextLoader
         )
 
         self.documents = loader.load()
@@ -112,7 +111,7 @@ class RAGRetrieval:
             self.initialize_embeddings()
 
         print(f"Loading vector store from {path}")
-        self.vectorstore = FAISS.load_local(path, self.embeddings)
+        self.vectorstore = FAISS.load_local(path, self.embeddings, )
         return self.vectorstore
 
     def retrieve(self, query: str, k: int = 10, score_threshold: Optional[float] = None) -> List[Document]:
@@ -139,8 +138,8 @@ class RAGRetrieval:
 if __name__ == "__main__":
     # Initialize the retrieval pipeline
     retriever = RAGRetrieval(
-        pdf_directory="/home/alex/typetwo-public/rag/data/small_data/",
-        chunk_size=500,  # Smaller chunks for more precise retrieval
+        txt_directory="/Users/alex/typetwo-public/rag/data/parsed",
+        chunk_size=500,
         chunk_overlap=50
     )
 
@@ -151,15 +150,15 @@ if __name__ == "__main__":
     retriever.create_vectorstore()
 
     # Optional: Save the vector store for later use
-    # retriever.save_vectorstore("./vectorstore")
+    retriever.save_vectorstore("./vectorstore")
 
     # Retrieve chunks for a query
-    query = "chemystry"
+    query = "chemistry"
     retrieved_chunks = retriever.retrieve(query, k=10)
 
     # Print retrieved chunks with their metadata
     for i, chunk in enumerate(retrieved_chunks):
         print(f"\nChunk {i + 1}:")
         print(f"Content: {chunk.page_content[:150]}...")
-        print(f"Source: {chunk.metadata.get('source', 'Unknown')}, Page: {chunk.metadata.get('page', 'Unknown')}")
+        print(f"Source: {chunk.metadata.get('source', 'Unknown')}")
         print(f"Similarity Score: {chunk.metadata.get('similarity_score', 'Unknown')}")

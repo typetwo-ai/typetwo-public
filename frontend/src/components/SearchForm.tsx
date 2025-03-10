@@ -16,7 +16,7 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
   loading, 
   handleSubmit 
 }) => (
-  <form className="backdrop-blur-md p-4 w-full" onSubmit={handleSubmit}>
+  <form className="backdrop-blur-md w-full" onSubmit={handleSubmit}>
     <div className="flex flex-col sm:flex-row items-center gap-2">
       <div className="w-full relative flex items-center">
         <TextareaAutosize

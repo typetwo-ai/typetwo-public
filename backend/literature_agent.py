@@ -38,7 +38,7 @@ if __name__ == "__main__":
     document_8 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0156-0173.pdf"
 
     documents = [document_1, document_2, document_3, document_4, document_5, document_6, document_7, document_8]
-    prompt = "how does anti-HCC mechanism of platinum complexes work? Base your answer on the documents."
+    prompt = "I'm working on immunotherapeutic in vivo assays? Is there anything I need to be aware of? Base your answer on the documents."
        
     try:
         _, answer = ask_gemini(prompt, documents)

@@ -8,7 +8,7 @@ import ResultsContent from './ResultsContent';
 const ContentArea: React.FC = () => {
   const [query, setQuery] = useState('');
   const [summary, setSummary] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Record<string, unknown>[]>([]);
   const [requestId, setRequestId] = useState<string>('');
   
   const [summaryVisible, setSummaryVisible] = useState(false);
@@ -87,7 +87,7 @@ const ContentArea: React.FC = () => {
 
   return (
     <div className="py-8">
-      <div className="container max-w-6xl text-center mb-8">
+      <div className="mx-auto max-w-6xl text-center mb-8">
         <h2 className="text-3xl font-semibold tracking-normal text-gray-900 mb-5">
           Retrieve data from ChEMBL35
         </h2>

@@ -22,7 +22,7 @@ const ParticlesBackground = memo(() => {
         }
       },
       color: {
-        value: ["#4f46e5", "#3b82f6", "#06b6d4"]
+        value: ["#FFEA3B", "#FFD900", "#FFC100"]
       },
       shape: {
         type: "circle",
@@ -114,7 +114,7 @@ const ParticlesBackground = memo(() => {
     },
     retina_detect: true,
     background: {
-      color: "#f3f4f6",
+      color: "#f7f8fa",
       opacity: 1
     },
     fps_limit: 60

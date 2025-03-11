@@ -2,6 +2,7 @@
 export interface ApiEndpoints {
     downloadExcel: (requestId: string) => string;
     query: string;
+    literature: string;
   }
   
   export interface EnvironmentConfig {

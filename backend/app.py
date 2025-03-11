@@ -118,9 +118,10 @@ def download_excel(request_id: str):
         return response
 
 @app.route('/api/literature', methods=['POST'])
-def process_query():
+def process_lit_query():
     data = request.get_json()
-    answer = generate_answer(data)
+    user_question = data.get('query', '')
+    answer = generate_answer(user_question)
     return jsonify({'summary': answer})
 
 if __name__ == '__main__':

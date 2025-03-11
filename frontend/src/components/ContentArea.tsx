@@ -15,7 +15,7 @@ const ContentArea: React.FC = () => {
   const [resultsVisible, setResultsVisible] = useState(false);
   const [hasResults, setHasResults] = useState(false);
   
-  const { loading, submitQuery } = useQueryService();
+  const { loading, submitQuery, submitSecondaryQuery } = useQueryService();
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -27,6 +27,7 @@ const ContentArea: React.FC = () => {
 
   useEffect(() => {
     const hasNewResults = summary !== '' || searchResults.length > 0;
+    console.log("Results state:", { summary, searchResults, hasNewResults });
     
     if (hasNewResults && !loading) {
       setHasResults(true);
@@ -73,6 +74,44 @@ const ContentArea: React.FC = () => {
     }
   };
 
+  const handleSecondarySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    try {
+      setSummary('');
+      setSearchResults([]);
+      
+      const result = await submitSecondaryQuery(query);
+      console.log("Result received:", result);
+
+      if (result.error) {
+        showToast(result.error, 'error');
+        setTimeout(() => {
+          setSummaryVisible(false);
+          setResultsVisible(false);
+          setTimeout(() => setHasResults(false), 300);
+        }, 100);
+        return;
+      }
+
+      console.log("Setting summary to:", result.summary);
+      setSummary(result.summary || '');
+      setSearchResults([]);
+      setRequestId('');
+      
+      showToast('Query processed successfully', 'success');
+    } catch (error) {
+      showToast('Failed to process query', 'error');
+      console.error(error);
+      setTimeout(() => {
+        setSummaryVisible(false);
+        setResultsVisible(false);
+        setTimeout(() => setHasResults(false), 300);
+      }, 100);
+    }
+  };
+
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
 
@@ -102,6 +141,7 @@ const ContentArea: React.FC = () => {
           setQuery={handleQueryChange}
           loading={loading}
           handleSubmit={handleSubmit}
+          handleSecondarySubmit={handleSecondarySubmit}
           hasResults={hasResults}
         />
       </div>

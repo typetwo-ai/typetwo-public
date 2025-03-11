@@ -34,6 +34,7 @@ def generate_answer(prompt: str) -> str:
     documents: list = json.loads(documents)["documents"]
     print(documents)
     _, answer = ask_gemini(prompt, documents)
+    print(answer)
     return answer
 
 def ask_gemini(prompt: str, documents: list) -> tuple[Any, str]:

@@ -7,6 +7,7 @@ interface SearchFormProps {
   setQuery: (query: string) => void;
   loading: boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
+  handleSecondarySubmit: (e: React.FormEvent) => Promise<void>;
   hasResults: boolean;
 }
 
@@ -14,9 +15,10 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
   query, 
   setQuery, 
   loading, 
-  handleSubmit 
+  handleSubmit,
+  handleSecondarySubmit
 }) => (
-  <form className="backdrop-blur-md w-full" onSubmit={handleSubmit}>
+  <form className="backdrop-blur-md w-full">
     <div className="flex flex-col sm:flex-row items-center gap-2">
       <div className="w-full relative flex items-center">
         <TextareaAutosize
@@ -29,9 +31,10 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
         />
       </div>
       <button 
-        type="submit" 
+        type="button" 
         className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-32 h-10 bg-gray-900 hover:bg-gray-700 text-white font-medium rounded-xl focus:outline-none disabled:bg-gray-700 flex items-center justify-center transition duration-200 ease-in-out"
         disabled={loading}
+        onClick={handleSecondarySubmit}
       >
         {loading ? (
           <div className="flex items-center justify-center">
@@ -40,6 +43,21 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
           </div>
         ) : (
           <span>Search</span>
+        )}
+      </button>
+      <button 
+        type="button" 
+        className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-32 h-10 bg-gray-900 hover:bg-gray-700 text-white font-medium rounded-xl focus:outline-none disabled:bg-gray-700 flex items-center justify-center transition duration-200 ease-in-out"
+        disabled={loading}
+        onClick={handleSubmit}
+      >
+        {loading ? (
+          <div className="flex items-center justify-center">
+            <div className="animate-spin h-4 w-4 border-2 border-gray-200 border-t-transparent rounded-full mr-2"></div>
+            <span>ChEMBL</span>
+          </div>
+        ) : (
+          <span>ChEMBL</span>
         )}
       </button>
     </div>

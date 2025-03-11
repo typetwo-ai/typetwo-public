@@ -5,6 +5,8 @@ from vertexai.preview.generative_models import GenerativeModel, Content, Part, G
 from typing import Any
 import json
 
+from task_description import PDF_ANALYSIS_INSTRUCTION
+
 logger = logging.getLogger(__name__)
 
 RESPONSE_SCHEMA = {
@@ -30,14 +32,15 @@ RESPONSE_SCHEMA_2 = {
 def generate_answer(prompt: str) -> str:
     _, documents = retrieve_relevant_documents(prompt)
     documents: list = json.loads(documents)["documents"]
+    print(documents)
     _, answer = ask_gemini(prompt, documents)
     return answer
 
 def ask_gemini(prompt: str, documents: list) -> tuple[Any, str]:
     try:
         data_part = [Part.from_uri(uri=document, mime_type="application/pdf") for document in documents]
-
-        model = GenerativeModel(model_name="gemini-2.0-flash-001")
+        prompt = f"Instructions: {PDF_ANALYSIS_INSTRUCTION}\n\nUser input: {prompt}"
+        model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
         response = model.generate_content(
             contents=[
                 Content(role="user", parts=[*data_part, Part.from_text(prompt)])
@@ -57,8 +60,8 @@ def retrieve_relevant_documents(prompt: str) -> tuple[Any, json]:
         json_content = json.load(file)
     json_text = json.dumps(json_content)
     
-    prompt = f"Select the 2 most relevant documents based on the user input. User input:\n{prompt}\n\n{json_text}"
-    model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
+    prompt = f"Go throgh the keywords and select the 10 or less most relevant documents based on the user input. User input:\n{prompt}\n\n{json_text}"
+    model = GenerativeModel(model_name="gemini-2.0-flash-001")
     response = model.generate_content(
         contents=[
             Content(role="user", parts=[Part.from_text(prompt)])
@@ -69,10 +72,9 @@ def retrieve_relevant_documents(prompt: str) -> tuple[Any, json]:
     return response, documents
 
 
-
 def generate_keywords(file_path: str):
-    model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
-    prompt = "Generate a list of 100 high value and specific keywords for the following document. The output should be a json with title and keywords. For abbreviations, use the abbreviaion and the full form as a single keyword."
+    model = GenerativeModel(model_name="gemini-2.0-flash-001")
+    prompt = "Generate a list of 100 high value and specific keywords for the following document. The output should be a json with title and keywords. For abbreviations, use the abbreviaion and the full form as a single keyword. Make sure that the keywords are compatible with json parsing."
     response = model.generate_content(
         contents=[
             Content(role="user", parts=[Part.from_uri(uri=file_path, mime_type="application/pdf"), Part.from_text(prompt)])
@@ -91,36 +93,39 @@ def build_index(documents: list):
             "title": keywords["title"],
             "keywords": keywords["keywords"]
         }
+    print(index)
+    json.dump(index, open("index.json", "w"), indent=4)
+    print(f"Index built and saved to index.json")
     return index
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    
-    document_1 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0001-0017.pdf"
-    document_2 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0018-0048.pdf"
-    document_3 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0049-0080.pdf"
-    document_4 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0081-0094.pdf"
-    document_5 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0095-0107.pdf"
-    document_6 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0108-0134.pdf"
-    document_7 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0135-0155.pdf"
-    document_8 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0156-0173.pdf"
+def get_document_paths(prefix="Journal of Medicinal Chemistry/2025 Volume 68/02  (0851-2043)"):
+    bucket_name = "literature-resources-bucket"
+    client = storage.Client()
 
-    documents = [document_1, document_2, document_3, document_4, document_5, document_6, document_7, document_8]
-    prompt = "I'm working on microsomal stability? Is there anything I need to be aware of? Base your answer on the documents."
+    blobs = client.list_blobs(bucket_name, prefix=prefix)
+    documents = [f"gs://{bucket_name}/{blob.name}" for blob in blobs if blob.name.endswith('.pdf')]
+    
+    return documents
+
+if __name__ == "__main__":
+
+    prompt = "I'm working on protacs and want to evaluate degradation kinetics."
        
     try:
-        print(prompt)
+        print("Starting...")
+        # print(prompt)
+        # documents = get_document_paths()
+        # print(documents)
         # _, answer = ask_gemini(prompt, documents)
         # print(answer)
         # response, keywords = generate_keywords(document_1)
         # print(keywords)
         # index = build_index(documents)
-        # print(index)
-        # json.dump(index, open("index.json", "w"), indent=4)
         # _, documents = retrieve_relevant_documents(prompt)
         # print(documents)
         answer = generate_answer(prompt)
         print(answer)
+        
 
     except Exception as e:
         print(f"Error during testing: {str(e)}") 

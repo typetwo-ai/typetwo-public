@@ -121,7 +121,6 @@ def download_excel(request_id: str):
 def process_query():
     data = request.get_json()
     answer = generate_answer(data)
-    answer = data.get("summary", "")
     return jsonify({'summary': answer})
 
 if __name__ == '__main__':

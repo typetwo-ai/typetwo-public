@@ -7,6 +7,32 @@ import json
 
 logger = logging.getLogger(__name__)
 
+RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string"},
+        "keywords": {"type": "array", "items": {"type": "string"}}
+    },
+    "required": ["title", "keywords"]
+}
+
+RESPONSE_SCHEMA_2 = {
+    "type": "object",
+    "properties": {
+        "documents": {
+            "type": "array",
+            "items": {"type": "string"}
+        }
+    },
+    "required": ["documents"]
+}
+
+def generate_answer(prompt: str) -> str:
+    _, documents = retrieve_relevant_documents(prompt)
+    documents: list = json.loads(documents)["documents"]
+    _, answer = ask_gemini(prompt, documents)
+    return answer
+
 def ask_gemini(prompt: str, documents: list) -> tuple[Any, str]:
     try:
         data_part = [Part.from_uri(uri=document, mime_type="application/pdf") for document in documents]
@@ -26,17 +52,23 @@ def ask_gemini(prompt: str, documents: list) -> tuple[Any, str]:
         logger.exception(f"Error querying Gemini with documents: {str(e)}")
         raise Exception(f"Failed to get response from Gemini: {str(e)}")
 
-def retrieve_document_list(prompt: str) -> list:
-    return documents
+def retrieve_relevant_documents(prompt: str) -> tuple[Any, json]:
+    with open("index.json", "r", encoding="utf-8") as file:
+        json_content = json.load(file)
+    json_text = json.dumps(json_content)
+    
+    prompt = f"Select the 2 most relevant documents based on the user input. User input:\n{prompt}\n\n{json_text}"
+    model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
+    response = model.generate_content(
+        contents=[
+            Content(role="user", parts=[Part.from_text(prompt)])
+        ],
+        generation_config=GenerationConfig(temperature=0, top_k=1, top_p=1, response_mime_type="application/json", response_schema=RESPONSE_SCHEMA_2)
+    )
+    documents = response.candidates[0].content.parts[0].text
+    return response, documents
 
-RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "title": {"type": "string"},
-        "keywords": {"type": "array", "items": {"type": "string"}}
-    },
-    "required": ["title", "keywords"]
-}
+
 
 def generate_keywords(file_path: str):
     model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
@@ -74,15 +106,21 @@ if __name__ == "__main__":
     document_8 = f"gs://literature-resources-bucket/Journal of Medicinal Chemistry/2025 Volume 68/01  (001-850)/0156-0173.pdf"
 
     documents = [document_1, document_2, document_3, document_4, document_5, document_6, document_7, document_8]
-    prompt = "I'm working on immunotherapeutic in vivo assays? Is there anything I need to be aware of? Base your answer on the documents."
+    prompt = "I'm working on microsomal stability? Is there anything I need to be aware of? Base your answer on the documents."
        
     try:
+        print(prompt)
         # _, answer = ask_gemini(prompt, documents)
         # print(answer)
         # response, keywords = generate_keywords(document_1)
         # print(keywords)
-        index = build_index(documents)
-        print(index)
-        json.dump(index, open("index.json", "w"), indent=4)
+        # index = build_index(documents)
+        # print(index)
+        # json.dump(index, open("index.json", "w"), indent=4)
+        # _, documents = retrieve_relevant_documents(prompt)
+        # print(documents)
+        answer = generate_answer(prompt)
+        print(answer)
+
     except Exception as e:
         print(f"Error during testing: {str(e)}") 

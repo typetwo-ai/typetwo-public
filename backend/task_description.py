@@ -162,7 +162,8 @@ Answer to their input in a direct manner. Is there anything the user need to be 
 Base your answer on the documents as the main resource of information.
 Have maximum two sections + references.
 Reference the documents properly, like you would do in a scholarly article. Use author, title, journal, volume, pages, and doi number (ideally linked so one can click on it).
-If you reference the same document multiple times in the answer, make sure you refer to it properly and unambiguously. For example, Leng et al. [1] used HiBiT assays to evaluate...
+If you reference the same document multiple times in the answer, make sure you refer to it properly and unambiguously.
+For example, Leng et al. [1] used HiBiT assays to evaluate... Use Vancouver reference style. But always in the text mention authors [number], then what they've done or said.
 Do not make up stuff. If you can't find an answer, that is fine, just say that you don't know.
 Adopt a nice and interesting sciency personality.
 """

@@ -43,7 +43,7 @@ def ask_gemini(prompt: str, documents: list) -> tuple[Any, str]:
     try:
         data_part = [Part.from_uri(uri=document, mime_type="application/pdf") for document in documents]
         prompt = f"Instructions: {PDF_ANALYSIS_INSTRUCTION}\n\nUser input: {prompt}"
-        model = GenerativeModel(model_name="gemini-2.0-pro-exp-02-05")
+        model = GenerativeModel(model_name="gemini-2.0-flash-001")
         response = model.generate_content(
             contents=[
                 Content(role="user", parts=[*data_part, Part.from_text(prompt)])
@@ -63,7 +63,7 @@ def retrieve_relevant_documents(prompt: str) -> tuple[Any, json]:
         json_content = json.load(file)
     json_text = json.dumps(json_content)
     
-    prompt = f"Go throgh the keywords and select the 10 or less most relevant documents based on the user input. User input:\n{prompt}\n\n{json_text}"
+    prompt = f"Go throgh the keywords and select the 5 to 10 most relevant documents based on the user input. User input:\n{prompt}\n\n{json_text}"
     model = GenerativeModel(model_name="gemini-2.0-flash-001")
     response = model.generate_content(
         contents=[

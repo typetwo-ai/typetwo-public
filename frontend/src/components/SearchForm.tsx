@@ -6,8 +6,7 @@ interface SearchFormProps {
   query: string;
   setQuery: (query: string) => void;
   loading: boolean;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
-  handleSecondarySubmit: (e: React.FormEvent) => Promise<void>;
+  onSubmit: (e: React.FormEvent) => Promise<void>;
   hasResults: boolean;
 }
 
@@ -15,8 +14,7 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
   query, 
   setQuery, 
   loading, 
-  handleSubmit,
-  handleSecondarySubmit
+  onSubmit
 }) => (
   <form className="backdrop-blur-md w-full">
     <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -27,14 +25,14 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
           minRows={1}
           maxRows={10}
           className="w-full py-2 px-4 bg-white border shadow-inner rounded-xl focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all outline-none text-gray-700 resize-none overflow-auto"
-          placeholder="e.g. Find all clinical drugs for Alzheimer's disease."
+          placeholder="e.g. Any new protein degradation studies?"
         />
       </div>
       <button 
         type="button" 
         className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-32 h-10 bg-gray-900 hover:bg-gray-700 text-white font-medium rounded-xl focus:outline-none disabled:bg-gray-700 flex items-center justify-center transition duration-200 ease-in-out"
         disabled={loading}
-        onClick={handleSecondarySubmit}
+        onClick={onSubmit}
       >
         {loading ? (
           <div className="flex items-center justify-center">
@@ -43,21 +41,6 @@ const SearchForm: React.FC<SearchFormProps> = memo(({
           </div>
         ) : (
           <span>Search</span>
-        )}
-      </button>
-      <button 
-        type="button" 
-        className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-32 h-10 bg-gray-900 hover:bg-gray-700 text-white font-medium rounded-xl focus:outline-none disabled:bg-gray-700 flex items-center justify-center transition duration-200 ease-in-out"
-        disabled={loading}
-        onClick={handleSubmit}
-      >
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <div className="animate-spin h-4 w-4 border-2 border-gray-200 border-t-transparent rounded-full mr-2"></div>
-            <span>ChEMBL</span>
-          </div>
-        ) : (
-          <span>ChEMBL</span>
         )}
       </button>
     </div>

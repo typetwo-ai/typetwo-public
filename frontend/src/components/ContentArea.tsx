@@ -128,10 +128,10 @@ const ContentArea: React.FC = () => {
     <div className="py-8">
       <div className="mx-auto max-w-6xl text-center mb-8">
         <h2 className="text-3xl font-semibold tracking-normal text-gray-900 mb-5">
-          Retrieve data from ChEMBL35
+          Literature Review
         </h2>
         <p className="text-lg tracking-normal text-gray-500">
-          Simply type your query in raw English.
+          Simply type what you want to know about.
         </p>
       </div>
   
@@ -140,8 +140,7 @@ const ContentArea: React.FC = () => {
           query={query}
           setQuery={handleQueryChange}
           loading={loading}
-          handleSubmit={handleSubmit}
-          handleSecondarySubmit={handleSecondarySubmit}
+          onSubmit={handleSecondarySubmit}
           hasResults={hasResults}
         />
       </div>

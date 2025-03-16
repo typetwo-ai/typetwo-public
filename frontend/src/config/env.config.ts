@@ -5,19 +5,22 @@ const configs: Record<EnvironmentName, EnvironmentConfig> = {
   local: {
     apiEndpoints: {
       downloadExcel: (requestId: string) => `http://127.0.0.1:5000/api/download-excel/${requestId}`,
-      query: 'http://127.0.0.1:5000/api/query'
+      query: 'http://127.0.0.1:5000/api/query',
+      literature: 'http://127.0.0.1:5000/api/literature'
     }
   },
   dev: {
     apiEndpoints: {
       downloadExcel: (requestId: string) => `https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/download-excel/${requestId}`,
-      query: 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/query'
+      query: 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/query',
+      literature: 'https://dev-backend-api-dot-project-1-450712.uc.r.appspot.com/api/literature'
     }
   },
   main: {
     apiEndpoints: {
       downloadExcel: (requestId: string) => `https://beta.typetwo.ai/api/download-excel/${requestId}`,
-      query: 'https://beta.typetwo.ai/api/query'
+      query: 'https://beta.typetwo.ai/api/query',
+      literature: 'https://beta.typetwo.ai/api/literature'
     }
   }
 };

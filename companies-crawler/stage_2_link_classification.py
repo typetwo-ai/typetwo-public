@@ -50,7 +50,7 @@ model = GenerativeModel(
 
 
 def handle_company(company_name, data, folder, filename, with_reasoning=True):
-    links = data['links']
+    links = data['filtered_links']
 
     dir_path = Path(folder)
     dir_path.mkdir(parents=True, exist_ok=True)
@@ -62,7 +62,7 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
     counter = 0
     for link in tqdm(links, desc=f'Handling links for company {company_name}'):
 
-        if counter != 0 and counter % 10 == 0:  # remove it if you dont use free exp model
+        if counter % 10 == 0:  # remove it if you dont use free exp model
             time.sleep(61)
 
         counter += 1
@@ -74,7 +74,7 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
 
         Your task is to analyze this link and classify whether it contains valuable information about the company's research and achievements. Specifically:
 
-        1. Determine if this link contains substantive content such as: research papers, press releases, news articles, scientific publications, case studies, product information, or innovation announcements.
+        1. Determine if this link contains substantive content such as: research papers, press releases, news articles, scientific publications, case studies, product information, investor updates, or innovation announcements.
 
         2. Provide a brief assessment of the content type and its relevance to understanding the company's scientific work and capabilities.
 
@@ -82,7 +82,6 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
         - All links provided come from crawling the company's website domain or are explicitly linked from their website
         - If you see a link from a different domain (e.g., a partner organization, journal, or news site), still check it out for any useful info i am interested in
         - Focus on scientific/research content rather than general company information like "About Us" or contact pages
-        - I am not interested in employers of the company
 
         The link to analyze: {link}
         """
@@ -121,7 +120,7 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
 
 
 def save_result(initial_data, link2result, output_path, with_reasoning=False):
-    initial_data['links'] = []
+    initial_data['cls_links'] = []
     for link, result in link2result.items():
         item = {
             'link': link,
@@ -132,14 +131,14 @@ def save_result(initial_data, link2result, output_path, with_reasoning=False):
         if not with_reasoning:
             del item['reasoning']
 
-        initial_data['links'].append(item)
+        initial_data['cls_links'].append(item)
 
     with open(output_path, "w") as f:
         f.write(json.dumps(initial_data, indent=4))
 
 
 if __name__ == "__main__":
-    company2data = load_json_files('website_links')
+    company2data = load_json_files('website_links_filtered')
     for item in company2data.items():
         company_name = item[0]
         data = item[1]

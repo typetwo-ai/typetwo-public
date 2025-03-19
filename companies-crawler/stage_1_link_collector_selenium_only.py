@@ -34,15 +34,6 @@ combined_xpath = """
         contains(@class, 'load') or
         contains(@class, 'expand')
     ] |
-    //a[
-        contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'show more') or
-        contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'load more') or
-        contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'view more') or
-        contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'see more') or
-        contains(@class, 'more') or
-        contains(@id, 'more') or
-        contains(@class, 'expand')
-    ] |
     //div[
         (contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'show more') or
         contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'load more')) and
@@ -194,9 +185,19 @@ class WebAgent:
             try:
                 self.driver.get(current_url)
                 time.sleep(5)
+
+                status_code = self.driver.execute_script(
+                    "return window.performance.getEntries()[0].responseStatus"
+                )
+
+                if status_code != 200:
+                    continue
+
                 self.expand_page()
                 time.sleep(3)
                 current_page_links = set(self.extract_all_links())
+
+                LOG.info(f"Link from this page: {current_page_links}")
 
                 self.all_links |= current_page_links
 
@@ -235,7 +236,9 @@ if __name__ == "__main__":
     driver.implicitly_wait(10)
     WebDriverWait(driver, 10)
 
-    for company_url in ['https://thinkbioscience.com']:
+    # companies = open('companies.txt').readlines()
+
+    for company_url in ['http://www.veralox.com/']:
         agent = WebAgent(driver)
 
         agent.crawl_website(company_url, './website_links', extract_domain_name(company_url) + '.json')

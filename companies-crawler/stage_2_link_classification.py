@@ -138,7 +138,7 @@ def save_result(initial_data, link2result, output_path, with_reasoning=False):
 
 
 if __name__ == "__main__":
-    company2data = load_json_files('website_links_filtered')
+    company2data = load_json_files('website_links')
     for item in company2data.items():
         company_name = item[0]
         data = item[1]

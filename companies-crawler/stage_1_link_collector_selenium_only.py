@@ -2,7 +2,8 @@ import datetime
 import json
 import logging
 import time
-from urllib.parse import urlparse
+import uuid
+from urllib.parse import urlparse, urlunparse
 from pathlib import Path
 import tldextract
 from bs4 import BeautifulSoup
@@ -66,12 +67,34 @@ def extract_domain_name(url):
 
 
 def url2canonical_form(url: str):
-    if url.endswith('/') and len(url) > 1:
-        url = url[:-1]
+    parsed = urlparse(url)
+    netloc = parsed.netloc.replace('www.', '')
 
-    url = url.replace('www.', '')
+    # Set fragment to empty string to remove it
+    fragment = ''
 
-    return url
+    path = parsed.path
+
+    # Remove trailing slash in all these cases:
+    # 1. When path is just "/" (with or without fragments/queries)
+    # 2. When path ends with "/" and is longer than 1 character
+    if path == '/' or (path.endswith('/') and len(path) > 1):
+        path = path[:-1] if path != '/' else ''
+
+    canonical = urlunparse((
+        parsed.scheme,
+        netloc,
+        path,
+        parsed.params,
+        parsed.query,
+        fragment
+    ))
+
+    return canonical
+
+
+def generate_uuid():
+    return uuid.uuid4().hex
 
 
 class WebAgent:
@@ -80,7 +103,7 @@ class WebAgent:
         self.driver = driver
         self.visited_urls = set()
         self.output_file = output_file
-        self.all_links = set()
+        self.all_links = []
 
         self.start_url = None
 
@@ -137,7 +160,7 @@ class WebAgent:
                             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
                             time.sleep(0.5)
                             element.click()
-                            time.sleep(2)
+                            time.sleep(0.5)
                             found_element = True
                             break
                         except Exception as e:
@@ -161,19 +184,54 @@ class WebAgent:
         self._unwrap_content()
         LOG.info("Page expanded...")
 
+    def save_page_as_pdf(self, output_path):
+        LOG.info(f"Saving page as PDF to {output_path}")
+
+        output_dir = Path(output_path).parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        pdf_options = {
+            'printBackground': True,
+            'paperHeight': 8.27,
+            'paperWidth': 11.69,
+            'marginTop': 0,
+            'marginBottom': 0,
+            'marginLeft': 0,
+            'marginRight': 0,
+            'scale': 1.0
+        }
+
+        result = self.driver.execute_cdp_cmd('Page.printToPDF', pdf_options)
+
+        with open(output_path, 'wb') as pdf_file:
+            import base64
+            pdf_data = base64.b64decode(result['data'])
+            pdf_file.write(pdf_data)
+
+        LOG.info(f"PDF saved successfully to {output_path}")
+
     def crawl_website(self, start_url, folder, filename):
+
         dir_path = Path(folder)
         dir_path.mkdir(parents=True, exist_ok=True)
 
         output_path = dir_path / Path(filename)
 
         self.start_url = start_url
-        urls_to_visit = [url2canonical_form(start_url)]
+        urls_to_visit = [{
+            'link': url2canonical_form(start_url),
+            'from': 'ROOT'
+        }]
+
         start_domain = tldextract.extract(start_url)
         base_domain = f"{start_domain.domain}.{start_domain.suffix}"
 
         while urls_to_visit:
-            current_url = urls_to_visit.pop(0)
+            current_entry = urls_to_visit.pop(0)
+
+            current_url = current_entry['link']
+
+            self.all_links.append(current_entry)
 
             if current_url in self.visited_urls:
                 continue
@@ -184,7 +242,7 @@ class WebAgent:
 
             try:
                 self.driver.get(current_url)
-                time.sleep(5)
+                time.sleep(0.1)
 
                 status_code = self.driver.execute_script(
                     "return window.performance.getEntries()[0].responseStatus"
@@ -194,18 +252,22 @@ class WebAgent:
                     continue
 
                 self.expand_page()
-                time.sleep(3)
+                self.save_page_as_pdf(f'content/{hash(current_url)}.pdf')
+                time.sleep(0.1)
                 current_page_links = set(self.extract_all_links())
 
                 LOG.info(f"Link from this page: {current_page_links}")
 
-                self.all_links |= current_page_links
-
                 for link in current_page_links:
                     # TODO: check that it is not a file (.pdf for example).
-                    # TODO: cut / as the end, because we can have dups like "https://thinkbioscience.com/contact", "https://thinkbioscience.com/contact/",
                     if is_same_domain_or_subdomain(link, base_domain):
-                        urls_to_visit.append(url2canonical_form(link))
+                        link = url2canonical_form(link)
+                        if current_url != link:
+                            urls_to_visit.append({
+                                'id': hash(link),
+                                'link': link,
+                                'from': current_url
+                            })
 
             except Exception as e:
                 raise e
@@ -213,8 +275,22 @@ class WebAgent:
             self.save_result(output_path)
 
     def save_result(self, filename):
+        used = set()
+        final_links = []
+        for entry in self.all_links:
+            if entry['link'] not in used:
+                froms = []
+                for inner_entry in self.all_links:
+                    if entry['link'] == inner_entry['link']:
+                        froms.append(inner_entry['from'])
+                used.add(entry['link'])
+                final_links.append({
+                    'link': entry['link'],
+                    'from': froms
+                })
+
         result = {'dt': datetime.datetime.now().isoformat(), 'start_url': self.start_url,
-                  'links': list(sorted(self.all_links))}
+                  'links': list(sorted(final_links, key=lambda x: x['link']))}
 
         with open(filename, "w") as f:
             f.write(json.dumps(result, indent=4))
@@ -228,6 +304,7 @@ if __name__ == "__main__":
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-notifications")
+    chrome_options.add_argument("--start-maximized")
 
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
@@ -238,7 +315,7 @@ if __name__ == "__main__":
 
     # companies = open('companies.txt').readlines()
 
-    for company_url in ['http://www.veralox.com/']:
+    for company_url in ['https://cbkone.com']:
         agent = WebAgent(driver)
 
         agent.crawl_website(company_url, './website_links', extract_domain_name(company_url) + '.json')

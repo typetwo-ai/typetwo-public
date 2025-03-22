@@ -14,7 +14,8 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 from stage_3_utils import transcribe_audio, extract_audio_from_video
 
-ROOT_FOLDER = './website_links_with_content/content/'
+ROOT_FOLDER = './website_links_with_content/'
+ROOT_CONTENT = './website_links_with_content/content/'
 
 CATEGORIES = {
     # HTML
@@ -38,7 +39,9 @@ HEADERS = {
 def get_domain(url_string):
     try:
         parsed_url = urlparse(url_string)
-        return parsed_url.netloc
+        domain = parsed_url.netloc
+        domain = domain.replace('www.', '')
+        return domain
     except Exception as e:
         print("Exception, ", e.__repr__())
         return None
@@ -134,8 +137,7 @@ def download_file(file_url, company_name, root_folder):
         file_name = os.path.basename(url_obj.path)
         _id = hash(file_url) % 1000000
 
-        if not file_name or file_name == '/' or not os.path.splitext(file_name)[1]:
-            file_name = f"file_{company_name}_{int(time.time())}_{_id}.{extension}"
+        file_name = f"file_{file_name.split('.')[0]}_{company_name}_{int(time.time())}_{_id}.{extension}"
 
         output_path = os.path.join(root_folder, category, file_name)
 
@@ -151,6 +153,7 @@ def download_file(file_url, company_name, root_folder):
             'category': category,
         }
     except Exception as e:
+        print(e)
         return None
 
 
@@ -209,13 +212,17 @@ def handle_file(path, category, company_name, root_folder):
 
 
 def process_company(company, data, metadata: list):
-    start_url = data['start_url'].trim()
+    start_url = data['start_url'].strip()
     links = [item['link'] for item in data['cls_links'] if item['cls'] == 'useful']
 
     start_domain = get_domain(start_url)
 
+    links_do_handle = []
+
     for link in links:
         link_domain = get_domain(link)
+
+        links_do_handle.append(link)
 
         if link_domain == start_domain:
             response = requests.get(link, headers=HEADERS, timeout=30)
@@ -226,30 +233,41 @@ def process_company(company, data, metadata: list):
             if 'text/html' in content_type:
                 file_links = extract_file_links(link, response.text)
                 for file_link in file_links:
-                    result = download_file(file_link, company, ROOT_FOLDER + '/' + 'original')
-                    category = result['category']
-                    path = result['path']
-
-                    cur_meta = {
-                        'original_path': path,
-                        'category': category,
-                    }
-
-                    handle_file(path, category, company, ROOT_FOLDER + '/' + 'parsed')
-
-                    metadata.append(cur_meta)
+                    links_do_handle.append(file_link)
             else:
+                links_do_handle.append(link)
                 print(f"WARNING! Page is not html - {link}")
+
+    for link in set(links_do_handle):
+        result = download_file(link, company, ROOT_CONTENT + '/' + 'original')
+        category = result['category']
+        path = result['path']
+
+        cur_meta = {
+            'original_path': path,
+            'category': category,
+        }
+
+        additional_meta = handle_file(path, category, company, ROOT_CONTENT + '/' + 'parsed')
+
+        cur_meta.update(additional_meta)
+
+        metadata.append(cur_meta)
 
 
 def main():
     mimetypes.init()
-    company2data = load_json_files('classified_links')
+    # company2data = load_json_files('classified_links')
+
+    company2data = {'test': json.load(open('/home/alex/typetwo-public/companies-crawler/classified_links/test.json'))}
 
     metadata = []
 
     for company, data in company2data.items():
-        print(company)
+        process_company(company, data, metadata)
+
+    with open(ROOT_FOLDER + 'metadata.json', 'w') as f:
+        json.dump(metadata, f, indent=4)
 
 
 if __name__ == "__main__":

@@ -50,7 +50,7 @@ model = GenerativeModel(
 
 
 def handle_company(company_name, data, folder, filename, with_reasoning=True):
-    links = data['filtered_links']
+    links = data['links']
 
     dir_path = Path(folder)
     dir_path.mkdir(parents=True, exist_ok=True)
@@ -60,7 +60,13 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
     link2result = {}
 
     counter = 0
-    for link in tqdm(links, desc=f'Handling links for company {company_name}'):
+    for entry in tqdm(links, desc=f'Handling links for company {company_name}'):
+
+        if entry['content_type'] != 'HTML':
+            continue
+
+        link = entry['link']
+        filename = entry.get('filename', None)
 
         if counter % 10 == 0:  # remove it if you dont use free exp model
             time.sleep(61)
@@ -70,11 +76,12 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
         prompt = \
         f"""
         I have a biotech/chemistry company called {company_name} with website {data['start_url']}. 
-        I will give you a link that was found by recursively crawling through their website.
+        I will give you a link that was found by recursively crawling through their website as well as optional pdf with its content .
 
         Your task is to analyze this link and classify whether it contains valuable information about the company's research and achievements. Specifically:
 
-        1. Determine if this link contains substantive content such as: research papers, press releases, news articles, scientific publications, case studies, product information, investor updates, or innovation announcements.
+        1. Determine if this link contains substantive content such as: research papers, press releases, news articles, 
+        scientific publications, case studies, product information, investor updates, or innovation announcements - It should be scientific information.
 
         2. Provide a brief assessment of the content type and its relevance to understanding the company's scientific work and capabilities.
 
@@ -82,13 +89,21 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
         - All links provided come from crawling the company's website domain or are explicitly linked from their website
         - If you see a link from a different domain (e.g., a partner organization, journal, or news site), still check it out for any useful info i am interested in
         - Focus on scientific/research content rather than general company information like "About Us" or contact pages
+        - Page will be used for indexing later, so it should be content page, not an aggregation
 
         The link to analyze: {link}
         """
 
+        parts = [Part.from_text(prompt)]
+
+        filename = f'content/{filename}'
+
+        if os.path.exists(filename):
+            parts.append(Part.from_data(open(filename, 'rb').read(), 'application/pdf'))
+
         response = model.generate_content(
             contents=[
-                Content(role="user", parts=[Part.from_text(prompt)])
+                Content(role="user", parts=parts)
             ],
             tools=[
                 Tool(
@@ -113,7 +128,8 @@ def handle_company(company_name, data, folder, filename, with_reasoning=True):
 
         link2result[link] = {
             'cls': 'useful' if is_useful else 'other',
-            'reasoning': reasoning
+            'reasoning': reasoning,
+            'id': entry['id']
         }
 
         save_result(data, link2result, output_path, with_reasoning=with_reasoning)
@@ -123,6 +139,7 @@ def save_result(initial_data, link2result, output_path, with_reasoning=False):
     initial_data['cls_links'] = []
     for link, result in link2result.items():
         item = {
+            'id': result['id'],
             'link': link,
             'cls': result['cls'],
             'reasoning': result['reasoning']

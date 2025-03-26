@@ -1,11 +1,17 @@
 import datetime
+import io
 import json
 import logging
+import os
 import time
 import uuid
-from urllib.parse import urlparse, urlunparse
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
+
+import tempfile
+import img2pdf
 import tldextract
+from PIL import Image
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -104,6 +110,12 @@ class WebAgent:
         self.visited_urls = set()
         self.output_file = output_file
         self.all_links = []
+        self.edges = []
+
+        window_size = driver.get_window_size()
+
+        self.start_width = window_size['width']
+        self.start_height = window_size['height']
 
         self.start_url = None
 
@@ -184,31 +196,57 @@ class WebAgent:
         self._unwrap_content()
         LOG.info("Page expanded...")
 
-    def save_page_as_pdf(self, output_path):
-        LOG.info(f"Saving page as PDF to {output_path}")
+    def get_content_type(self):
+        content_type = self.driver.execute_script("return document.contentType")
 
-        output_dir = Path(output_path).parent
-        output_dir.mkdir(parents=True, exist_ok=True)
+        if content_type == "text/html":
+            return "HTML"
+        elif content_type.startswith("image/"):
+            return "Image"
+        elif content_type.startswith("audio/"):
+            return "Audio"
+        elif content_type == "application/pdf":
+            return "PDF"
+        elif content_type.startswith("video/"):
+            return "Video"
+        else:
+            return f"Other: {content_type}"
 
-        pdf_options = {
-            'printBackground': True,
-            'paperHeight': 8.27,
-            'paperWidth': 11.69,
-            'marginTop': 0,
-            'marginBottom': 0,
-            'marginLeft': 0,
-            'marginRight': 0,
-            'scale': 1.0
-        }
+    def capture_webpage_as_pdf(self, output_pdf_path="webpage.pdf"):
+        try:
+            time.sleep(3)
 
-        result = self.driver.execute_cdp_cmd('Page.printToPDF', pdf_options)
+            total_width = self.driver.execute_script("return document.body.scrollWidth")
+            total_height = self.driver.execute_script("return document.body.scrollHeight")
 
-        with open(output_path, 'wb') as pdf_file:
-            import base64
-            pdf_data = base64.b64decode(result['data'])
-            pdf_file.write(pdf_data)
+            self.driver.set_window_size(total_width, min(20000, total_height + 100))
+            time.sleep(1)
 
-        LOG.info(f"PDF saved successfully to {output_path}")
+            screenshot = driver.get_screenshot_as_png()
+
+            img = Image.open(io.BytesIO(screenshot))
+
+            temp_image_paths = []
+            with tempfile.TemporaryDirectory() as temp_dir:
+                IMG_HEIGHT = 2 * self.start_height
+                for i, cur_top in enumerate(range(0, img.height, IMG_HEIGHT)):
+                    cropped_img = img.crop((0, cur_top, img.width, min(cur_top + IMG_HEIGHT, img.height)))
+
+                    temp_path = os.path.join(temp_dir, f"slice_{i}.png")
+                    cropped_img.save(temp_path)
+                    temp_image_paths.append(temp_path)
+
+                # Convert all image slices to a single PDF
+                with open(output_pdf_path, "wb") as f:
+                    f.write(img2pdf.convert(temp_image_paths))
+
+            return output_pdf_path
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
 
     def crawl_website(self, start_url, folder, filename):
 
@@ -231,8 +269,6 @@ class WebAgent:
 
             current_url = current_entry['link']
 
-            self.all_links.append(current_entry)
-
             if current_url in self.visited_urls:
                 continue
 
@@ -252,22 +288,33 @@ class WebAgent:
                     continue
 
                 self.expand_page()
-                self.save_page_as_pdf(f'content/{hash(current_url)}.pdf')
+                if not os.path.exists('./content'):
+                    os.mkdir('./content')
+
+                filename = f"{hash(current_url)}.pdf"
+                self.capture_webpage_as_pdf(f'content/{filename}')
                 time.sleep(0.1)
+
+                self.all_links.append({
+                    'link': current_entry['link'],
+                    'id': hash(current_entry['link']),
+                    'content_type': self.get_content_type(),
+                    'filename': filename,
+                })
+
                 current_page_links = set(self.extract_all_links())
 
                 LOG.info(f"Link from this page: {current_page_links}")
 
                 for link in current_page_links:
-                    # TODO: check that it is not a file (.pdf for example).
                     if is_same_domain_or_subdomain(link, base_domain):
                         link = url2canonical_form(link)
                         if current_url != link:
                             urls_to_visit.append({
-                                'id': hash(link),
                                 'link': link,
                                 'from': current_url
                             })
+                            self.edges.append((current_url, link))
 
             except Exception as e:
                 raise e
@@ -279,14 +326,19 @@ class WebAgent:
         final_links = []
         for entry in self.all_links:
             if entry['link'] not in used:
-                froms = []
-                for inner_entry in self.all_links:
-                    if entry['link'] == inner_entry['link']:
-                        froms.append(inner_entry['from'])
                 used.add(entry['link'])
+
+                children = []
+                for edge in self.edges:
+                    if edge[0] == entry['link']:
+                        children.append(edge[1])
+
                 final_links.append({
+                    'id': entry['id'],
+                    'content_type': entry['content_type'],
+                    'filename': entry['filename'],
                     'link': entry['link'],
-                    'from': froms
+                    'children': list(set(children))
                 })
 
         result = {'dt': datetime.datetime.now().isoformat(), 'start_url': self.start_url,
@@ -297,10 +349,10 @@ class WebAgent:
 
 
 if __name__ == "__main__":
-    headless = False
+    headless = True
     chrome_options = Options()
     if headless:
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")  # critical to have headless for capture_webpage_as_pdf
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-notifications")
@@ -313,9 +365,10 @@ if __name__ == "__main__":
     driver.implicitly_wait(10)
     WebDriverWait(driver, 10)
 
-    # companies = open('companies.txt').readlines()
+    companies = open('companies.txt').readlines()
 
-    for company_url in ['https://cbkone.com']:
+    for company_url in companies:
+    # for company_url in ['https://cbkone.com']:
         agent = WebAgent(driver)
 
         agent.crawl_website(company_url, './website_links', extract_domain_name(company_url) + '.json')

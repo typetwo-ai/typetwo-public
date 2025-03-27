@@ -16,6 +16,7 @@ from db_agent import db_agent_loop
 from orch_agent import generate_instructions_with_orchestrator
 from reporter_agent import generate_summary_with_reporter
 from utils import execute_query
+from literature_agent import generate_answer
 
 
 app = Flask(__name__)
@@ -116,6 +117,12 @@ def download_excel(request_id: str):
         response.status_code = 500
         return response
 
+@app.route('/api/literature', methods=['POST'])
+def process_lit_query():
+    data = request.get_json()
+    user_question = data.get('query', '')
+    answer = generate_answer(user_question)
+    return jsonify({'summary': answer})
 
 if __name__ == '__main__':
     app.run(debug=True)

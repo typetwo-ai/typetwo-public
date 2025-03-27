@@ -1,0 +1,28 @@
+{
+    "dt": "2025-03-17T11:16:09.896458",
+    "start_url": "http://www.veralox.com/",
+    "cls_links": [
+        {
+            "link": "https://arrakistx.com/wp-content/uploads/2020/05/special-report-consummating-a-deal-under-lockdown.mp3",
+            "cls": "useful"
+        },
+        {
+            "link": "https://veralox.com/news/veralox-therapeutics-announces-ind-submission-for-vlx-1005-to-treat-heparin-inducted-thrombocytopenia/",
+            "cls": "useful"
+        },
+        {
+            "link": "https://veralox.com/wp-content/uploads/2022/07/Expanded-Access-Policy.pdf",
+            "cls": "useful"
+        },
+        {
+            "link": "https://sciencedirect.com/science/article/abs/pii/S0014299920302144",
+            "cls": "useful",
+            "reasoning": "The link leads to a scientific article on ScienceDirect with a DOI. This suggests it's a research paper, which is highly relevant to understanding the company's scientific work and capabilities."
+        },
+        {
+            "link": "https://tedcomd.com/gateway-services/rural-business-",
+            "cls": "other",
+            "reasoning": "This link appears to be related to economic development or rural business services, which is unlikely to contain specific information about Veralox's research and achievements in biotechnology or chemistry. It does not seem to fit the criteria of research papers, press releases, news articles, scientific publications, case studies, product information, investor updates, or innovation announcements."
+        }
+    ]
+}

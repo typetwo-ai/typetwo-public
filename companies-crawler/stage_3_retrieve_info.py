@@ -2,15 +2,12 @@ import glob
 import json
 import mimetypes
 import os
-import re
 import time
-import torch
 from urllib.parse import urlparse, urljoin
-from docling.document_converter import DocumentConverter
 
 import requests
 from bs4 import BeautifulSoup
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+from docling.document_converter import DocumentConverter
 
 from stage_3_utils import transcribe_audio, extract_audio_from_video
 
@@ -141,8 +138,6 @@ def download_file(file_url, company_name, root_folder):
 
         output_path = os.path.join(root_folder, category, file_name)
 
-        output_path = re.sub(r'[\\/*?:"<>|]', "_", output_path)
-
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         save_file(output_path, response.content, is_binary=True)
@@ -154,7 +149,7 @@ def download_file(file_url, company_name, root_folder):
         }
     except Exception as e:
         print(e)
-        return None
+        raise e
 
 
 def load_json_files(links_dir: str):
@@ -170,9 +165,6 @@ def load_json_files(links_dir: str):
     return all_data
 
 
-
-
-
 def handle_file(path, category, company_name, root_folder):
     content_to_save = None
     extension = None
@@ -182,10 +174,15 @@ def handle_file(path, category, company_name, root_folder):
     if category == 'audio':
         full_text, detailed_output = transcribe_audio(path)
         extension = 'txt'
+        content_to_save = full_text
         result = {
             'annotation': detailed_output
         }
-    if category == 'html' or category == 'pdfs':
+    if category == 'html':
+        content_to_save = open(path).read()
+        extension = 'txt'
+        result = {}
+    if category == 'pdfs':
         result = converter.convert(path)
         content_to_save = result.document.export_to_markdown()
         extension = 'md'
@@ -194,17 +191,16 @@ def handle_file(path, category, company_name, root_folder):
     if category == 'video':
         audio_path = extract_audio_from_video(path)
         full_text, detailed_output = transcribe_audio(path)
+        content_to_save = full_text
         extension = 'txt'
         result = {
             'annotation': detailed_output
         }
         os.remove(audio_path)
 
-
     _id = hash(path) % 1000000
     file_name = f"file_{company_name}_{int(time.time())}_{_id}.{extension}"
     output_path = os.path.join(root_folder, category, file_name)
-    output_path = re.sub(r'[\\/*?:"<>|]', "_", output_path)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     save_file(output_path, content_to_save, is_binary=False)
 
@@ -212,31 +208,14 @@ def handle_file(path, category, company_name, root_folder):
 
 
 def process_company(company, data, metadata: list):
-    start_url = data['start_url'].strip()
-    links = [item['link'] for item in data['cls_links'] if item['cls'] == 'useful']
-
-    start_domain = get_domain(start_url)
 
     links_do_handle = []
 
-    for link in links:
-        link_domain = get_domain(link)
-
-        links_do_handle.append(link)
-
-        if link_domain == start_domain:
-            response = requests.get(link, headers=HEADERS, timeout=30)
-            response.raise_for_status()
-
-            content_type = response.headers.get('content-type', '')
-
-            if 'text/html' in content_type:
-                file_links = extract_file_links(link, response.text)
-                for file_link in file_links:
-                    links_do_handle.append(file_link)
-            else:
-                links_do_handle.append(link)
-                print(f"WARNING! Page is not html - {link}")
+    for entry in data['cls_links']:
+        if entry['cls'] == 'useful':
+            links_do_handle.append(entry['link'])
+            for child in entry['children']:
+                links_do_handle.append(child)
 
     for link in set(links_do_handle):
         result = download_file(link, company, ROOT_CONTENT + '/' + 'original')
@@ -246,6 +225,7 @@ def process_company(company, data, metadata: list):
         cur_meta = {
             'original_path': path,
             'category': category,
+            'company': company
         }
 
         additional_meta = handle_file(path, category, company, ROOT_CONTENT + '/' + 'parsed')

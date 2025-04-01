@@ -8,6 +8,7 @@ import uuid
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
+from joblib import Parallel, delayed
 import tempfile
 import img2pdf
 import tldextract
@@ -168,10 +169,14 @@ class WebAgent:
 
                     if element.is_displayed() and element.is_enabled():
                         try:
-                            LOG.info(f"Clicking {element.tag_name} element with text: {element.text.strip()}")
-                            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+                            name = element.text.strip() if element.text.strip() != '' else element.accessible_name
+                            LOG.info(f"Clicking {element.tag_name} element with text: {name}")
+                            # Instead of scrollIntoView(true)
+                            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                            time.sleep(1)
                             time.sleep(0.5)
                             element.click()
+                            # self.driver.execute_script("arguments[0].click();", element)
                             time.sleep(0.5)
                             found_element = True
                             break
@@ -184,7 +189,7 @@ class WebAgent:
 
             new_height = self.driver.execute_script("return document.body.scrollHeight")
 
-            if new_height == last_height and not found_element:
+            if new_height == last_height or not found_element:
                 LOG.info("No height change and no clickable elements found. Stopping expansion.")
                 break
 
@@ -222,7 +227,7 @@ class WebAgent:
             self.driver.set_window_size(total_width, min(20000, total_height + 100))
             time.sleep(1)
 
-            screenshot = driver.get_screenshot_as_png()
+            screenshot = self.driver.get_screenshot_as_png()
 
             img = Image.open(io.BytesIO(screenshot))
 
@@ -317,7 +322,7 @@ class WebAgent:
                             self.edges.append((current_url, link))
 
             except Exception as e:
-                raise e
+                print(f"Failed handling {current_url}, skipping it...", e)
 
             self.save_result(output_path)
 
@@ -349,6 +354,8 @@ class WebAgent:
 
 
 if __name__ == "__main__":
+
+    # def run(company_url):
     headless = True
     chrome_options = Options()
     if headless:
@@ -363,12 +370,15 @@ if __name__ == "__main__":
         options=chrome_options
     )
     driver.implicitly_wait(10)
-    WebDriverWait(driver, 10)
+    WebDriverWait(driver, 20)
 
     companies = open('companies.txt').readlines()
-
-    for company_url in companies:
-    # for company_url in ['https://cbkone.com']:
+    # for company_url in companies:
+    for company_url in ['https://www.a2apharma.com']:
         agent = WebAgent(driver)
 
         agent.crawl_website(company_url, './website_links', extract_domain_name(company_url) + '.json')
+
+
+    # companies = open('companies.txt').readlines()
+    # Parallel(n_jobs=2)(delayed(run)(url) for url in companies)
